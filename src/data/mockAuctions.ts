@@ -15,12 +15,12 @@ export const mockAuctions: Auction[] = [
     appraised_value: 220000,
     origin: "Judicial",
     stage: "1ª Praça",
-    end_date: "2025-02-25T16:00:00.000Z", // Data futura
+    end_date: "2025-07-25T16:00:00.000Z", // Data futura
     href: "https://example.com/leilao1",
     website: "Leiloeira ABC",
     website_image: "https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg?auto=compress&cs=tinysrgb&w=200",
-    updated: "2024-12-15T12:00:00.000Z",
-    data_scraped: "2024-12-15T12:00:00.000Z",
+    updated: "2025-06-15T12:00:00.000Z",
+    data_scraped: "2025-06-17T12:00:00.000Z", // Hoje para badge "Novo"
     docs: ["Matrícula", "Condomínio"],
     format: "Presencial"
   },
@@ -37,12 +37,12 @@ export const mockAuctions: Auction[] = [
     appraised_value: 600000,
     origin: "Judicial",
     stage: "1ª Praça",
-    end_date: "2025-02-28T14:00:00.000Z", // Data futura
+    end_date: "2025-07-28T14:00:00.000Z", // Data futura
     href: "https://example.com/leilao2",
     website: "Leiloeira DEF",
     website_image: "https://images.pexels.com/photos/3184293/pexels-photo-3184293.jpeg?auto=compress&cs=tinysrgb&w=200",
-    updated: "2024-12-15T15:20:00.000Z",
-    data_scraped: "2024-12-15T15:20:00.000Z",
+    updated: "2025-06-15T15:20:00.000Z",
+    data_scraped: "2025-06-16T15:20:00.000Z",
     docs: ["Matrícula", "IPTU"],
     format: "Online"
   },
@@ -59,12 +59,12 @@ export const mockAuctions: Auction[] = [
     appraised_value: 150000,
     origin: "Extrajudicial",
     stage: "1ª Praça",
-    end_date: "2025-03-01T09:00:00.000Z", // Data futura
+    end_date: "2025-08-01T09:00:00.000Z", // Data futura
     href: "https://example.com/leilao3",
     website: "Leiloeira MNO",
     website_image: "https://images.pexels.com/photos/3184296/pexels-photo-3184296.jpeg?auto=compress&cs=tinysrgb&w=200",
-    updated: "2024-12-15T07:20:00.000Z",
-    data_scraped: "2024-12-15T07:20:00.000Z",
+    updated: "2025-06-15T07:20:00.000Z",
+    data_scraped: "2025-06-15T07:20:00.000Z",
     docs: ["Matrícula", "Certidões"],
     format: "Presencial"
   },
@@ -81,12 +81,12 @@ export const mockAuctions: Auction[] = [
     appraised_value: 350000,
     origin: "Judicial",
     stage: "2ª Praça",
-    end_date: "2025-03-05T16:00:00.000Z", // Data futura
+    end_date: "2025-08-05T16:00:00.000Z", // Data futura
     href: "https://example.com/leilao4",
     website: "Leiloeira JKL",
     website_image: "https://images.pexels.com/photos/3184295/pexels-photo-3184295.jpeg?auto=compress&cs=tinysrgb&w=200",
-    updated: "2024-12-14T14:10:00.000Z",
-    data_scraped: "2024-12-14T14:10:00.000Z",
+    updated: "2025-06-14T14:10:00.000Z",
+    data_scraped: "2025-06-14T14:10:00.000Z",
     docs: ["Matrícula", "Alvará"],
     format: "Online"
   },
@@ -103,12 +103,12 @@ export const mockAuctions: Auction[] = [
     appraised_value: 580000,
     origin: "Judicial",
     stage: "3ª Praça",
-    end_date: "2025-03-10T15:00:00.000Z", // Data futura
+    end_date: "2025-08-10T15:00:00.000Z", // Data futura
     href: "https://example.com/leilao5",
     website: "Leiloeira PQR",
     website_image: "https://images.pexels.com/photos/3184297/pexels-photo-3184297.jpeg?auto=compress&cs=tinysrgb&w=200",
-    updated: "2024-12-16T11:30:00.000Z",
-    data_scraped: "2024-12-16T11:30:00.000Z",
+    updated: "2025-06-16T11:30:00.000Z",
+    data_scraped: "2025-06-17T11:30:00.000Z", // Hoje para badge "Novo"
     docs: ["Matrícula", "Alvará", "Bombeiros"],
     format: "Híbrido"
   },
@@ -129,12 +129,12 @@ export const mockAuctions: Auction[] = [
     appraised_value: 60000,
     origin: "Extrajudicial",
     stage: "2ª Praça",
-    end_date: "2025-02-28T14:00:00.000Z", // Data futura
+    end_date: "2025-07-28T14:00:00.000Z", // Data futura
     href: "https://example.com/leilao6",
     website: "Leiloeira AUTO",
     website_image: "https://images.pexels.com/photos/3184298/pexels-photo-3184298.jpeg?auto=compress&cs=tinysrgb&w=200",
-    updated: "2024-12-14T10:30:00.000Z",
-    data_scraped: "2024-12-14T10:30:00.000Z",
+    updated: "2025-06-14T10:30:00.000Z",
+    data_scraped: "2025-06-14T10:30:00.000Z",
     docs: ["Documento do Veículo", "Laudo"],
     format: "Online"
   },
@@ -153,12 +153,12 @@ export const mockAuctions: Auction[] = [
     appraised_value: 50000,
     origin: "Judicial",
     stage: "1ª Praça",
-    end_date: "2025-03-01T11:00:00.000Z", // Data futura
+    end_date: "2025-08-01T11:00:00.000Z", // Data futura
     href: "https://example.com/leilao7",
     website: "Leiloeira VEÍCULOS",
     website_image: "https://images.pexels.com/photos/3184299/pexels-photo-3184299.jpeg?auto=compress&cs=tinysrgb&w=200",
-    updated: "2024-12-15T16:45:00.000Z",
-    data_scraped: "2024-12-15T16:45:00.000Z",
+    updated: "2025-06-15T16:45:00.000Z",
+    data_scraped: "2025-06-15T16:45:00.000Z",
     docs: ["Documento do Veículo"],
     format: "Presencial"
   },
@@ -177,12 +177,12 @@ export const mockAuctions: Auction[] = [
     appraised_value: 68000,
     origin: "Particular",
     stage: "Praça única",
-    end_date: "2025-03-05T10:00:00.000Z", // Data futura
+    end_date: "2025-08-05T10:00:00.000Z", // Data futura
     href: "https://example.com/leilao8",
     website: "Leiloeira PREMIUM",
     website_image: "https://images.pexels.com/photos/3184300/pexels-photo-3184300.jpeg?auto=compress&cs=tinysrgb&w=200",
-    updated: "2024-12-16T13:20:00.000Z",
-    data_scraped: "2024-12-16T13:20:00.000Z",
+    updated: "2025-06-16T13:20:00.000Z",
+    data_scraped: "2025-06-17T13:20:00.000Z", // Hoje para badge "Novo"
     docs: ["Documento do Veículo", "Manual"],
     format: "Híbrido"
   },
@@ -203,12 +203,12 @@ export const mockAuctions: Auction[] = [
     appraised_value: 20000,
     origin: "Extrajudicial",
     stage: "1ª Praça",
-    end_date: "2025-03-01T11:00:00.000Z", // Data futura
+    end_date: "2025-08-01T11:00:00.000Z", // Data futura
     href: "https://example.com/leilao9",
     website: "Leiloeira MOTOS",
     website_image: "https://images.pexels.com/photos/3184301/pexels-photo-3184301.jpeg?auto=compress&cs=tinysrgb&w=200",
-    updated: "2024-12-13T15:45:00.000Z",
-    data_scraped: "2024-12-13T15:45:00.000Z",
+    updated: "2025-06-13T15:45:00.000Z",
+    data_scraped: "2025-06-13T15:45:00.000Z",
     docs: ["Documento do Veículo"],
     format: "Presencial"
   },
@@ -227,12 +227,12 @@ export const mockAuctions: Auction[] = [
     appraised_value: 24000,
     origin: "Judicial",
     stage: "2ª Praça",
-    end_date: "2025-03-10T14:30:00.000Z", // Data futura
+    end_date: "2025-08-10T14:30:00.000Z", // Data futura
     href: "https://example.com/leilao10",
     website: "Leiloeira SUL",
     website_image: "https://images.pexels.com/photos/3184302/pexels-photo-3184302.jpeg?auto=compress&cs=tinysrgb&w=200",
-    updated: "2024-12-15T09:15:00.000Z",
-    data_scraped: "2024-12-15T09:15:00.000Z",
+    updated: "2025-06-15T09:15:00.000Z",
+    data_scraped: "2025-06-15T09:15:00.000Z",
     docs: ["Documento do Veículo", "Laudo"],
     format: "Online"
   },
@@ -253,12 +253,12 @@ export const mockAuctions: Auction[] = [
     appraised_value: 110000,
     origin: "Judicial",
     stage: "1ª Praça",
-    end_date: "2025-03-15T16:00:00.000Z", // Data futura
+    end_date: "2025-08-15T16:00:00.000Z", // Data futura
     href: "https://example.com/leilao11",
     website: "Leiloeira PESADOS",
     website_image: "https://images.pexels.com/photos/3184303/pexels-photo-3184303.jpeg?auto=compress&cs=tinysrgb&w=200",
-    updated: "2024-12-16T14:00:00.000Z",
-    data_scraped: "2024-12-16T14:00:00.000Z",
+    updated: "2025-06-16T14:00:00.000Z",
+    data_scraped: "2025-06-16T14:00:00.000Z",
     docs: ["Documento do Veículo", "Tacógrafo"],
     format: "Presencial"
   },
@@ -279,12 +279,12 @@ export const mockAuctions: Auction[] = [
     appraised_value: 125000,
     origin: "Público",
     stage: "1ª Praça",
-    end_date: "2025-03-20T15:00:00.000Z", // Data futura
+    end_date: "2025-08-20T15:00:00.000Z", // Data futura
     href: "https://example.com/leilao12",
     website: "Leiloeira NORDESTE",
     website_image: "https://images.pexels.com/photos/3184305/pexels-photo-3184305.jpeg?auto=compress&cs=tinysrgb&w=200",
-    updated: "2024-12-15T12:45:00.000Z",
-    data_scraped: "2024-12-15T12:45:00.000Z",
+    updated: "2025-06-15T12:45:00.000Z",
+    data_scraped: "2025-06-15T12:45:00.000Z",
     docs: ["Documento do Veículo", "ANTT"],
     format: "Híbrido"
   },
@@ -305,12 +305,12 @@ export const mockAuctions: Auction[] = [
     appraised_value: 230000,
     origin: "Judicial",
     stage: "3ª Praça",
-    end_date: "2025-03-25T10:00:00.000Z", // Data futura
+    end_date: "2025-08-25T10:00:00.000Z", // Data futura
     href: "https://example.com/leilao13",
     website: "Leiloeira MÁQUINAS",
     website_image: "https://images.pexels.com/photos/3184306/pexels-photo-3184306.jpeg?auto=compress&cs=tinysrgb&w=200",
-    updated: "2024-12-14T08:20:00.000Z",
-    data_scraped: "2024-12-14T08:20:00.000Z",
+    updated: "2025-06-14T08:20:00.000Z",
+    data_scraped: "2025-06-14T08:20:00.000Z",
     docs: ["Documento do Veículo", "Manual"],
     format: "Presencial"
   },
@@ -331,12 +331,12 @@ export const mockAuctions: Auction[] = [
     appraised_value: 45000,
     origin: "Extrajudicial",
     stage: "1ª Praça",
-    end_date: "2025-03-30T13:00:00.000Z", // Data futura
+    end_date: "2025-08-30T13:00:00.000Z", // Data futura
     href: "https://example.com/leilao14",
     website: "Leiloeira APOIO",
     website_image: "https://images.pexels.com/photos/3184307/pexels-photo-3184307.jpeg?auto=compress&cs=tinysrgb&w=200",
-    updated: "2024-12-16T10:15:00.000Z",
-    data_scraped: "2024-12-16T10:15:00.000Z",
+    updated: "2025-06-16T10:15:00.000Z",
+    data_scraped: "2025-06-16T10:15:00.000Z",
     docs: ["Documento do Veículo"],
     format: "Online"
   },
@@ -357,12 +357,12 @@ export const mockAuctions: Auction[] = [
     appraised_value: 85000,
     origin: "Particular",
     stage: "Praça única",
-    end_date: "2025-04-01T16:30:00.000Z", // Data futura
+    end_date: "2025-09-01T16:30:00.000Z", // Data futura
     href: "https://example.com/leilao15",
     website: "Leiloeira NÁUTICA",
     website_image: "https://images.pexels.com/photos/3184308/pexels-photo-3184308.jpeg?auto=compress&cs=tinysrgb&w=200",
-    updated: "2024-12-15T14:30:00.000Z",
-    data_scraped: "2024-12-15T14:30:00.000Z",
+    updated: "2025-06-15T14:30:00.000Z",
+    data_scraped: "2025-06-15T14:30:00.000Z",
     docs: ["Documento da Embarcação", "Marinha"],
     format: "Presencial"
   }
@@ -621,7 +621,7 @@ export function getAuctionsByCategory(
   // Calculate statistics
   const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
   const newAuctions = filteredAuctions.filter(auction => 
-    new Date(auction.updated) >= twentyFourHoursAgo
+    new Date(auction.data_scraped) >= twentyFourHoursAgo
   ).length;
 
   const uniqueSites = new Set(filteredAuctions.map(auction => auction.website));
