@@ -60,52 +60,48 @@ export function AuctionCardHorizontalBase({
           )}
 
           <div className="flex items-start justify-between gap-2">
-            {/* CORREÇÃO COMPLETA: Altura fixa + overflow control rigoroso */}
-            <div className="flex-1 min-w-0 h-[68px] flex flex-col justify-between overflow-hidden">
-              <div className="flex-shrink-0 overflow-hidden">
-                {/* CORREÇÃO: Título com line-clamp obrigatório */}
-                <div className="flex items-center gap-1.5 mb-0.5 min-h-[16px] overflow-hidden">
-                  <h3 className="text-[13px] md:text-sm font-bold text-gray-900 leading-tight flex-shrink-0 line-clamp-1">
+            {/* CORREÇÃO: Altura FIXA em vez de mínima para eliminar layout shift */}
+            <div className="flex-1 min-w-0 h-[68px] flex flex-col justify-between">
+              <div className="flex-shrink-0">
+                <div className="flex items-center gap-1.5 mb-0.5">
+                  <h3 className="text-[13px] md:text-sm font-bold text-gray-900 leading-tight flex-shrink-0">
                     {titleLeft}
                   </h3>
                   {area && (
                     <>
-                      <span className="text-gray-300 font-light text-[10px] md:text-xs flex-shrink-0">•</span>
-                      <span className="text-[10px] md:text-xs text-gray-500 font-medium whitespace-nowrap flex-shrink-0">
+                      <span className="text-gray-300 font-light text-[10px] md:text-xs">•</span>
+                      <span className="text-[10px] md:text-xs text-gray-500 font-medium whitespace-nowrap">
                         {area}
                       </span>
                     </>
                   )}
                   {titleRight && (
                     <>
-                      <span className="text-gray-300 font-light text-[10px] md:text-xs flex-shrink-0">•</span>
-                      <span className="text-[10px] md:text-xs text-gray-500 font-medium whitespace-nowrap flex-shrink-0">
+                      <span className="text-gray-300 font-light text-[10px] md:text-xs">•</span>
+                      <span className="text-[10px] md:text-xs text-gray-500 font-medium whitespace-nowrap">
                         {titleRight}
                       </span>
                     </>
                   )}
                 </div>
                 
-                {/* CORREÇÃO: Subtitle com altura fixa e overflow control */}
-                <div className="min-h-[14px] overflow-hidden">
-                  <p className="text-[11px] md:text-xs text-gray-600 line-clamp-1 leading-tight">
-                    {subtitle}
-                  </p>
-                </div>
+                <p className="text-[11px] md:text-xs text-gray-600 line-clamp-1 leading-tight">
+                  {subtitle}
+                </p>
               </div>
 
-              {/* CORREÇÃO: Área do preço com altura fixa */}
-              <div className="flex items-baseline gap-1.5 flex-shrink-0 min-h-[20px] overflow-hidden">
-                <span className="text-[15px] md:text-lg font-bold text-gray-900 leading-tight flex-shrink-0">
+              {/* CORREÇÃO: Posição fixa na parte inferior */}
+              <div className="flex items-baseline gap-1.5 flex-shrink-0">
+                <span className="text-[15px] md:text-lg font-bold text-gray-900 leading-tight">
                   {price}
                 </span>
                 {appraisedValue && (
-                  <span className="text-[10px] md:text-xs text-gray-500 flex-shrink-0">
+                  <span className="text-[10px] md:text-xs text-gray-500">
                     {appraisedValue}
                   </span>
                 )}
                 {discount && (
-                  <span className="bg-gradient-to-r from-green-500 to-green-600 text-white text-[10px] md:text-xs font-bold uppercase px-1.5 py-0.5 md:px-2 md:py-0.5 rounded-md shadow-sm flex-shrink-0">
+                  <span className="bg-gradient-to-r from-green-500 to-green-600 text-white text-[10px] md:text-xs font-bold uppercase px-1.5 py-0.5 md:px-2 md:py-0.5 rounded-md shadow-sm">
                     {discount}
                   </span>
                 )}

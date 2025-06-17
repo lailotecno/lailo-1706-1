@@ -1,7 +1,6 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-dom';
 import { BuscadorListingPage } from './pages/BuscadorListingPage';
-import { CarsPage } from './pages/CarsPage';
 import { MobileBottomNavbar } from './components/MobileBottomNavbar';
 import { DesktopSidebar } from './components/DesktopSidebar';
 import { isValidVehicleType, isValidPropertyType } from './utils/typeNormalization';
@@ -59,9 +58,6 @@ function App() {
           {/* Main listing pages with validation */}
           <Route path="/buscador/veiculos/:tipo" element={<ValidatedVeiculosRoute />} />
           <Route path="/buscador/imoveis/:tipo" element={<ValidatedImoveisRoute />} />
-          
-          {/* New Cars Page */}
-          <Route path="/carros" element={<CarsPage />} />
           
           {/* Placeholder routes for other sections */}
           <Route path="/favoritos" element={<div className="p-8 text-center">Favoritos - Em desenvolvimento</div>} />
