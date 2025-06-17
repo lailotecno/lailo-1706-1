@@ -364,7 +364,8 @@ export const BuscadorListingPage: React.FC<BuscadorListingPageProps> = ({ catego
               </div>
             </div>
             
-            <main className="w-full px-4 md:px-6 overflow-x-hidden">
+            {/* CORREÇÃO PRINCIPAL: Container com altura mínima fixa para evitar layout shift */}
+            <main className="w-full px-4 md:px-6 overflow-x-hidden min-h-[calc(100vh-200px)] transition-all duration-300 ease-in-out">
               {/* Header with status and desktop sort control - Only show if there are results */}
               {!showEmptyState && (
                 <div className="flex flex-col min-[768px]:flex-row min-[768px]:items-center min-[768px]:justify-between py-4 gap-3 w-full">
@@ -426,8 +427,8 @@ export const BuscadorListingPage: React.FC<BuscadorListingPageProps> = ({ catego
                 </>
               )}
 
-              {/* Pagination Container - SEMPRE PRESENTE com altura fixa para evitar layout shift */}
-              <div className="mt-8 mb-8 w-full overflow-x-auto min-h-[72px] flex items-center justify-center">
+              {/* CORREÇÃO: Container da paginação SEMPRE presente com altura fixa */}
+              <div className="mt-8 mb-8 w-full overflow-x-auto h-[72px] flex items-center justify-center">
                 {!showEmptyState && totalPages > 1 && (
                   <Pagination
                     currentPage={currentPage}
