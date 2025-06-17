@@ -21,7 +21,6 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
 }) => {
   // 🛡️ CORREÇÃO: Verificação defensiva para evitar erro #130
   if (!category) {
-    console.warn('⚠️ EmptyState: category prop é obrigatório');
     return null;
   }
 
@@ -148,7 +147,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
               try {
                 content.primaryAction?.action?.();
               } catch (error) {
-                console.error('❌ Erro ao executar ação primária:', error);
+                console.error('Erro ao executar ação primária:', error);
               }
             }}
             className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold py-3 px-6 rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl active:scale-[0.98] flex items-center justify-center gap-2"
@@ -164,7 +163,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
               try {
                 content.secondaryAction?.action?.();
               } catch (error) {
-                console.error('❌ Erro ao executar ação secundária:', error);
+                console.error('Erro ao executar ação secundária:', error);
               }
             }}
             className="flex-1 bg-white text-gray-700 font-semibold py-3 px-6 rounded-xl border border-gray-300 hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 active:scale-[0.98] flex items-center justify-center gap-2"

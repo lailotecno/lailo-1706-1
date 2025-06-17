@@ -399,22 +399,17 @@ export function getAuctionsByCategory(
   sort?: SortOption,
   searchQuery?: string
 ): { auctions: Auction[]; totalSites: number; newAuctions: number } {
-  console.log('🔍 getAuctionsByCategory chamada:', { category, type, filters, sort, searchQuery });
-  
   // 🛡️ CORREÇÃO: Verificação defensiva para evitar erro #130
   if (!category || !Array.isArray(mockAuctions)) {
-    console.warn('⚠️ getAuctionsByCategory: parâmetros inválidos');
     return { auctions: [], totalSites: 0, newAuctions: 0 };
   }
   
   const now = DateUtils.getNow();
-  console.log('⏰ Data atual (Brasília):', DateUtils.format(now, { includeTime: true }));
   
   // Filter by category and active auctions (end_date > now)
   let filteredAuctions = mockAuctions.filter(auction => {
     // 🛡️ CORREÇÃO: Verificar se auction é válido
     if (!auction || typeof auction !== 'object' || !auction._id) {
-      console.warn('⚠️ Auction inválido encontrado:', auction);
       return false;
     }
     
@@ -422,29 +417,17 @@ export function getAuctionsByCategory(
     const endDate = DateUtils.parse(auction.end_date);
     
     if (!endDate) {
-      console.log(`❌ Auction ${auction._id}: Data inválida - ${auction.end_date}`);
       return false;
     }
     
     const isActive = DateUtils.isFuture(endDate);
     const matchesCategory = category === 'imoveis' ? auction.type === 'property' : auction.type === 'vehicle';
     
-    console.log(`Auction ${auction._id}:`, { 
-      endDate: DateUtils.format(endDate, { includeTime: true }), 
-      now: DateUtils.format(now, { includeTime: true }),
-      isActive, 
-      matchesCategory, 
-      type: auction.type,
-      category 
-    });
-    
     if (!isActive) {
-      console.log(`❌ Auction ${auction._id} filtered out: leilão expirado`);
       return false;
     }
     
     if (!matchesCategory) {
-      console.log(`❌ Auction ${auction._id} filtered out: categoria não corresponde`);
       return false;
     }
 
@@ -466,11 +449,6 @@ export function getAuctionsByCategory(
         
         const allowedTypes = typeMap[type];
         if (allowedTypes && !allowedTypes.includes(auction.vehicle_type || '')) {
-          console.log(`❌ Auction ${auction._id} filtered out by vehicle type:`, { 
-            type, 
-            allowedTypes, 
-            vehicleType: auction.vehicle_type 
-          });
           return false;
         }
       } else {
@@ -494,26 +472,16 @@ export function getAuctionsByCategory(
         
         const allowedTypes = typeMap[type];
         if (allowedTypes && !allowedTypes.includes(auction.property_type || '')) {
-          console.log(`❌ Auction ${auction._id} filtered out by property type:`, { 
-            type, 
-            allowedTypes, 
-            propertyType: auction.property_type 
-          });
           return false;
         }
       }
     }
     
-    console.log(`✅ Auction ${auction._id} passou no filtro inicial`);
     return true;
   });
 
-  console.log(`✅ Após filtro inicial: ${filteredAuctions.length} leilões`);
-
   // Apply filters
   if (filters && typeof filters === 'object') {
-    const initialCount = filteredAuctions.length;
-    
     filteredAuctions = filteredAuctions.filter(auction => {
       // 🛡️ CORREÇÃO: Verificar se auction ainda é válido
       if (!auction || typeof auction !== 'object') {
@@ -531,11 +499,9 @@ export function getAuctionsByCategory(
         if (filters.format === 'leilao') {
           // Para leilão, aceitar Presencial, Online ou Híbrido
           if (!['Presencial', 'Online', 'Híbrido'].includes(auction.format)) {
-            console.log(`❌ Auction ${auction._id} filtered out by format: ${auction.format} not in leilao formats`);
             return false;
           }
         } else if (expectedFormat && auction.format !== expectedFormat) {
-          console.log(`❌ Auction ${auction._id} filtered out by format: ${auction.format} !== ${expectedFormat}`);
           return false;
         }
       }
@@ -551,7 +517,6 @@ export function getAuctionsByCategory(
         
         const mappedOrigins = filters.origin.map(o => originMap[o] || o);
         if (!mappedOrigins.includes(auction.origin)) {
-          console.log(`❌ Auction ${auction._id} filtered out by origin: ${auction.origin} not in [${mappedOrigins.join(', ')}]`);
           return false;
         }
       }
@@ -567,14 +532,12 @@ export function getAuctionsByCategory(
         
         const mappedStages = filters.stage.map(s => stageMap[s] || s);
         if (!mappedStages.includes(auction.stage)) {
-          console.log(`❌ Auction ${auction._id} filtered out by stage: ${auction.stage} not in [${mappedStages.join(', ')}]`);
           return false;
         }
       }
 
       // State filter
       if (filters.state && filters.state !== "all" && auction.state !== filters.state) {
-        console.log(`❌ Auction ${auction._id} filtered out by state: ${auction.state} !== ${filters.state}`);
         return false;
       }
 
@@ -582,10 +545,7 @@ export function getAuctionsByCategory(
       if (filters.city && filters.city !== "all") {
         const cityMatches = compareStrings(auction.city, filters.city);
         if (!cityMatches) {
-          console.log(`❌ Auction ${auction._id} filtered out by city: "${auction.city}" !== "${filters.city}" (normalized: "${normalizeString(auction.city)}" vs "${normalizeString(filters.city)}")`);
           return false;
-        } else {
-          console.log(`✅ Auction ${auction._id} matches city filter: "${auction.city}" === "${filters.city}"`);
         }
       }
 
@@ -596,7 +556,6 @@ export function getAuctionsByCategory(
           const [min, max] = filters.useful_area_m2;
           if (typeof min === 'number' && typeof max === 'number' && 
               (auction.useful_area_m2 < min || auction.useful_area_m2 > max)) {
-            console.log(`❌ Auction ${auction._id} filtered out by area: ${auction.useful_area_m2} not in range [${min}, ${max}]`);
             return false;
           }
         }
@@ -608,7 +567,6 @@ export function getAuctionsByCategory(
         if (filters.brand && filters.brand !== "all") {
           const brandMatches = compareStrings(auction.brand || '', filters.brand);
           if (!brandMatches) {
-            console.log(`❌ Auction ${auction._id} filtered out by brand: "${auction.brand}" !== "${filters.brand}"`);
             return false;
           }
         }
@@ -617,7 +575,6 @@ export function getAuctionsByCategory(
         if (filters.model && filters.model !== "all") {
           const modelMatches = compareStrings(auction.model || '', filters.model);
           if (!modelMatches) {
-            console.log(`❌ Auction ${auction._id} filtered out by model: "${auction.model}" !== "${filters.model}"`);
             return false;
           }
         }
@@ -626,7 +583,6 @@ export function getAuctionsByCategory(
         if (filters.color && filters.color !== "all") {
           const colorMatches = compareStrings(auction.color || '', filters.color);
           if (!colorMatches) {
-            console.log(`❌ Auction ${auction._id} filtered out by color: "${auction.color}" !== "${filters.color}"`);
             return false;
           }
         }
@@ -636,7 +592,6 @@ export function getAuctionsByCategory(
           const [min, max] = filters.year;
           if (typeof min === 'number' && typeof max === 'number' && 
               (auction.year < min || auction.year > max)) {
-            console.log(`❌ Auction ${auction._id} filtered out by year: ${auction.year} not in range [${min}, ${max}]`);
             return false;
           }
         }
@@ -647,22 +602,17 @@ export function getAuctionsByCategory(
         const [min, max] = filters.initial_bid_value;
         if (typeof min === 'number' && typeof max === 'number' && 
             (auction.initial_bid_value < min || auction.initial_bid_value > max)) {
-          console.log(`❌ Auction ${auction._id} filtered out by price: ${auction.initial_bid_value} not in range [${min}, ${max}]`);
           return false;
         }
       }
 
-      console.log(`✅ Auction ${auction._id} passou em todos os filtros`);
       return true;
     });
-    
-    console.log(`✅ Após aplicar filtros: ${filteredAuctions.length} leilões (era ${initialCount})`);
   }
 
   // Apply search query
   if (searchQuery && typeof searchQuery === 'string' && searchQuery.trim()) {
     const query = searchQuery.toLowerCase().trim();
-    const initialCount = filteredAuctions.length;
     
     filteredAuctions = filteredAuctions.filter(auction => {
       // 🛡️ CORREÇÃO: Verificar se auction ainda é válido
@@ -681,20 +631,12 @@ export function getAuctionsByCategory(
         auction.website
       ].filter(Boolean).join(' ').toLowerCase();
       
-      const matches = searchableText.includes(query);
-      if (!matches) {
-        console.log(`❌ Auction ${auction._id} filtered out by search: "${query}" not found in "${searchableText}"`);
-      }
-      
-      return matches;
+      return searchableText.includes(query);
     });
-    
-    console.log(`✅ Após busca "${query}": ${filteredAuctions.length} leilões (era ${initialCount})`);
   }
 
   // Apply sorting
   if (sort && filteredAuctions.length > 0) {
-    console.log(`🔄 Aplicando ordenação: ${sort}`);
     try {
       filteredAuctions.sort((a, b) => {
         // 🛡️ CORREÇÃO: Verificar se ambos os auctions são válidos
@@ -728,7 +670,7 @@ export function getAuctionsByCategory(
         }
       });
     } catch (error) {
-      console.error('❌ Erro ao ordenar leilões:', error);
+      console.error('Erro ao ordenar leilões:', error);
     }
   }
 
@@ -743,17 +685,13 @@ export function getAuctionsByCategory(
     const uniqueSites = new Set(filteredAuctions.map(auction => auction.website).filter(Boolean));
     const totalSites = uniqueSites.size;
 
-    const result = {
+    return {
       auctions: filteredAuctions,
       totalSites,
       newAuctions
     };
-    
-    console.log('📊 Resultado final:', result);
-    
-    return result;
   } catch (error) {
-    console.error('❌ Erro ao calcular estatísticas:', error);
+    console.error('Erro ao calcular estatísticas:', error);
     return { auctions: filteredAuctions, totalSites: 0, newAuctions: 0 };
   }
 }

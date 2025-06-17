@@ -107,8 +107,6 @@ type AppAction =
 
 // ===== REDUCER =====
 function appReducer(state: AppState, action: AppAction): AppState {
-  console.log('🔄 AppContext Action:', action.type, action.payload);
-  
   switch (action.type) {
     case 'SET_VIEW_MODE':
       return {
@@ -255,9 +253,8 @@ const saveToStorage = (state: AppState) => {
     };
     
     localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
-    console.log('💾 Estado salvo no localStorage:', dataToSave);
   } catch (error) {
-    console.warn('⚠️ Erro ao salvar no localStorage:', error);
+    console.warn('Erro ao salvar no localStorage:', error);
   }
 };
 
@@ -265,12 +262,10 @@ const loadFromStorage = (): Partial<AppState> => {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (!saved) {
-      console.log('📂 Nenhum estado salvo encontrado');
       return {};
     }
     
     const parsed = JSON.parse(saved);
-    console.log('📂 Estado carregado do localStorage:', parsed);
     
     // Validar e sanitizar dados carregados
     const validatedState: Partial<AppState> = {};
@@ -313,7 +308,7 @@ const loadFromStorage = (): Partial<AppState> => {
     
     return validatedState;
   } catch (error) {
-    console.warn('⚠️ Erro ao carregar do localStorage:', error);
+    console.warn('Erro ao carregar do localStorage:', error);
     return {};
   }
 };

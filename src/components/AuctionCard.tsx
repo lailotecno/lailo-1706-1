@@ -15,13 +15,11 @@ interface AuctionCardProps {
 export const AuctionCard: React.FC<AuctionCardProps> = React.memo(({ auction, viewMode }) => {
   // 🛡️ CORREÇÃO: Verificação defensiva para evitar erro #130
   if (!auction || typeof auction !== 'object') {
-    console.warn('⚠️ AuctionCard: auction prop é inválido:', auction);
     return null;
   }
 
   // Verificar propriedades essenciais
   if (!auction._id || !auction.type || !auction.image) {
-    console.warn('⚠️ AuctionCard: auction está incompleto:', auction);
     return null;
   }
 

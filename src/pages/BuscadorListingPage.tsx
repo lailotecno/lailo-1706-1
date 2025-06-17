@@ -31,15 +31,6 @@ export const BuscadorListingPage: React.FC<BuscadorListingPageProps> = ({ catego
   const [showSortPopover, setShowSortPopover] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
 
-  console.log('🏠 BuscadorListingPage - Estado do contexto:', {
-    category,
-    viewMode: state.viewMode,
-    sortOption: state.sortOption,
-    searchQuery: state.searchQuery,
-    appliedFilters: state.appliedFilters,
-    stagedFilters: state.stagedFilters
-  });
-
   // Validar e normalizar o tipo
   const getCurrentType = (): string => {
     if (!tipo) return 'todos';

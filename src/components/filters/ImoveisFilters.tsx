@@ -7,10 +7,6 @@ import { useAppContext } from "../../contexts/AppContext"
 export const ImoveisFilters: React.FC = React.memo(() => {
   const { state, actions } = useAppContext();
   const filters = state.stagedFilters.imoveis;
-  
-  console.log('🏠 ImoveisFilters - Estado atual:', {
-    filters
-  });
 
   // 🚀 OTIMIZAÇÃO: Memoizar handlers
   const handleEstadoChange = React.useCallback((value: string) => {

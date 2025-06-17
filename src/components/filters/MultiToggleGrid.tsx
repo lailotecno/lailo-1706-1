@@ -32,13 +32,6 @@ export const MultiToggleGrid: React.FC<MultiToggleGridProps> = React.memo(({
       newValues = [...currentValues, optionValue];
     }
     
-    console.log('🔄 MultiToggleGrid - Toggle:', {
-      optionValue,
-      currentValues,
-      newValues,
-      action: currentValues.includes(optionValue) ? 'remove' : 'add'
-    });
-    
     onValueChange(newValues);
   }, [disabled, onValueChange, value]);
 

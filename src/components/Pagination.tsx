@@ -17,7 +17,6 @@ export const Pagination: React.FC<PaginationProps> = ({
   // 🛡️ CORREÇÃO: Verificação defensiva para evitar erro #130
   if (typeof currentPage !== 'number' || typeof totalPages !== 'number' || 
       currentPage < 1 || totalPages < 1 || !onPageChange) {
-    console.warn('⚠️ Pagination: props inválidos:', { currentPage, totalPages, onPageChange });
     return null;
   }
 
@@ -58,7 +57,7 @@ export const Pagination: React.FC<PaginationProps> = ({
       try {
         onPageChange(page);
       } catch (error) {
-        console.error('❌ Erro ao mudar página:', error);
+        console.error('Erro ao mudar página:', error);
       }
     }
   };

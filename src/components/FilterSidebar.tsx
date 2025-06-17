@@ -26,7 +26,6 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
 
   // 🛡️ CORREÇÃO: Verificação defensiva para evitar erro #130
   if (!category) {
-    console.warn('⚠️ FilterSidebar: category prop é obrigatório');
     return null;
   }
 
@@ -43,10 +42,8 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
       } else {
         actions.applyVeiculosFilters();
       }
-      
-      console.log('✅ Filtros aplicados com sucesso');
     } catch (error) {
-      console.error('❌ Erro ao aplicar filtros:', error);
+      console.error('Erro ao aplicar filtros:', error);
     }
     
     setIsApplying(false);
@@ -68,10 +65,8 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
       } else {
         actions.clearVeiculosFilters();
       }
-      
-      console.log('✅ Filtros limpos com sucesso');
     } catch (error) {
-      console.error('❌ Erro ao limpar filtros:', error);
+      console.error('Erro ao limpar filtros:', error);
     }
     
     setIsClearing(false);

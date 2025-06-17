@@ -12,7 +12,6 @@ export const usePagination = ({ auctions, itemsPerPage, dependencies }: UsePagin
   
   // Reset page when dependencies change
   useEffect(() => {
-    console.log('📄 usePagination - Resetando página devido a mudanças nas dependências');
     setCurrentPage(1);
   }, dependencies);
   
@@ -23,15 +22,6 @@ export const usePagination = ({ auctions, itemsPerPage, dependencies }: UsePagin
     const endIndex = startIndex + itemsPerPage;
     const currentAuctions = auctions.slice(startIndex, endIndex);
     
-    console.log('📊 usePagination - Dados calculados:', {
-      totalAuctions: auctions.length,
-      totalPages,
-      currentPage,
-      startIndex,
-      endIndex,
-      currentAuctionsCount: currentAuctions.length
-    });
-    
     return {
       totalPages,
       currentAuctions
@@ -39,7 +29,6 @@ export const usePagination = ({ auctions, itemsPerPage, dependencies }: UsePagin
   }, [auctions, itemsPerPage, currentPage]);
   
   const handlePageChange = (page: number) => {
-    console.log('📄 usePagination - Mudando para página:', page);
     setCurrentPage(page);
     // Scroll to top when page changes
     window.scrollTo({ top: 0, behavior: 'smooth' });

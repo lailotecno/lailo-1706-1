@@ -34,7 +34,7 @@ export const SortPopover: React.FC<SortPopoverProps> = ({
     try {
       onSortChange(value);
     } catch (error) {
-      console.error('❌ Erro ao alterar ordenação:', error);
+      console.error('Erro ao alterar ordenação:', error);
     }
   };
 

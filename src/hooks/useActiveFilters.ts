@@ -9,8 +9,6 @@ interface UseActiveFiltersProps {
 export const useActiveFilters = ({ category, appliedFilters }: UseActiveFiltersProps) => {
   // 🚀 OTIMIZAÇÃO: useMemo com dependências estáveis
   return useMemo(() => {
-    console.log('🔍 useActiveFilters - Verificando filtros ativos para:', category);
-    
     const filters = category === 'imoveis' ? appliedFilters.imoveis : appliedFilters.veiculos;
     
     const hasActiveFilters = (
@@ -36,7 +34,6 @@ export const useActiveFilters = ({ category, appliedFilters }: UseActiveFiltersP
       ))
     );
     
-    console.log('📊 useActiveFilters - Resultado:', hasActiveFilters);
     return hasActiveFilters;
   }, [
     category,

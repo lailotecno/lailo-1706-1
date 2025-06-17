@@ -43,20 +43,17 @@ export const BaseFilters: React.FC<BaseFiltersProps> = React.memo(({
   // Carregar municípios quando o estado mudar
   React.useEffect(() => {
     if (estado && estado !== "all") {
-      console.log('🏛️ BaseFilters - Carregando municípios para estado:', estado);
       setLoadingMunicipios(true)
       fetchMunicipiosByEstado(estado)
         .then(municipiosData => {
-          console.log('🏙️ BaseFilters - Municípios carregados:', municipiosData.length);
           setMunicipios(municipiosData);
         })
         .catch(error => {
-          console.error('❌ Erro ao carregar municípios:', error)
+          console.error('Erro ao carregar municípios:', error)
           setMunicipios([])
         })
         .finally(() => setLoadingMunicipios(false))
     } else {
-      console.log('🏛️ BaseFilters - Limpando municípios (estado vazio ou "all")');
       setMunicipios([])
     }
   }, [estado])
@@ -84,20 +81,11 @@ export const BaseFilters: React.FC<BaseFiltersProps> = React.memo(({
 
   // 🚀 OTIMIZAÇÃO: Memoizar handlers
   const handleEstadoChange = React.useCallback((value: string) => {
-    console.log('🏛️ BaseFilters - Estado mudou:', {
-      newValue: value,
-      willResetCidade: true
-    })
-    
     onEstadoChange(value)
     onCidadeChange("") // Reset cidade when estado changes
   }, [onEstadoChange, onCidadeChange]);
 
   const handleCidadeChange = React.useCallback((value: string) => {
-    console.log('🏙️ BaseFilters - Cidade mudou:', {
-      newValue: value
-    })
-    
     onCidadeChange(value)
   }, [onCidadeChange]);
 

@@ -14,11 +14,6 @@ export const VeiculosFilters: React.FC<VeiculosFiltersProps> = React.memo(({
 }) => {
   const { state, actions } = useAppContext();
   const filters = state.stagedFilters.veiculos;
-  
-  console.log('🚗 VeiculosFilters - Estado atual:', {
-    filters,
-    currentVehicleType
-  });
 
   // 🚀 OTIMIZAÇÃO: Memoizar opções que não mudam
   const marcas = React.useMemo(() => [

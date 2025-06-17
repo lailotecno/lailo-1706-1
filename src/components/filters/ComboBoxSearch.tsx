@@ -57,23 +57,10 @@ export const ComboBoxSearch: React.FC<ComboBoxSearchProps> = ({
       return option.value.toLowerCase() === value.toLowerCase();
     });
     
-    console.log('🔍 ComboBoxSearch - Buscando opção:', {
-      value,
-      options: options.slice(0, 3), // Mostrar apenas as primeiras 3 para debug
-      found,
-      totalOptions: options.length
-    });
-    
     return found || null
   }, [options, value])
 
   const handleSelect = (selectedValue: string) => {
-    console.log('🎯 ComboBoxSearch - Selecionando:', {
-      selectedValue,
-      currentValue: value,
-      willClear: selectedValue === value
-    });
-    
     // CORREÇÃO: Converter para maiúsculas se for um estado (sigla de 2 caracteres)
     // Isso garante consistência com os valores esperados nas opções
     let normalizedValue = selectedValue

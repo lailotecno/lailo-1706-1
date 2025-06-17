@@ -19,13 +19,6 @@ export const useAuctionData = ({
 }: UseAuctionDataProps) => {
   // 🚀 OTIMIZAÇÃO: useMemo com dependências específicas e estáveis
   return useMemo(() => {
-    console.log('🔍 useAuctionData - Recalculando leilões:', { 
-      category, 
-      currentType, 
-      sortOption, 
-      searchQuery 
-    });
-    
     try {
       // Convert our APPLIED filter format to the expected format
       const filters: Filters = category === 'imoveis' ? {
@@ -50,11 +43,10 @@ export const useAuctionData = ({
       };
 
       const result = getAuctionsByCategory(category, currentType, filters, sortOption, searchQuery);
-      console.log('📊 useAuctionData - Resultado calculado:', result);
       
       return result;
     } catch (error) {
-      console.error('❌ Erro ao buscar leilões:', error);
+      console.error('Erro ao buscar leilões:', error);
       return { auctions: [], totalSites: 0, newAuctions: 0 };
     }
   }, [
