@@ -67,26 +67,29 @@ export function AuctionCardHorizontalVehicle({
           )}
 
           <div className="flex items-start justify-between gap-2">
-            {/* Área de texto com altura mínima fixa para evitar layout shift */}
-            <div className="flex-1 min-w-0 min-h-[60px] flex flex-col justify-start">
-              <div className="flex items-center gap-1.5 mb-0.5">
-                <h3 className="text-[13px] md:text-sm font-bold text-gray-900 leading-tight flex-shrink-0">
-                  {brand}
-                </h3>
-                <span className="text-[13px] md:text-sm font-bold text-gray-900 leading-tight truncate">
-                  {model}
-                </span>
-              </div>
-              
-              <div className="flex items-center gap-1.5 text-[11px] md:text-xs text-gray-600 mb-2">
-                <span className="font-normal">{color}</span>
-                <span className="text-gray-300">•</span>
-                <span className="font-normal">{year}</span>
-                <span className="text-gray-300">•</span>
-                <span className="truncate font-normal">{formatCityState(cityState)}</span>
+            {/* CORREÇÃO: Altura FIXA em vez de mínima para eliminar layout shift */}
+            <div className="flex-1 min-w-0 h-[68px] flex flex-col justify-between">
+              <div className="flex-shrink-0">
+                <div className="flex items-center gap-1.5 mb-0.5">
+                  <h3 className="text-[13px] md:text-sm font-bold text-gray-900 leading-tight flex-shrink-0">
+                    {brand}
+                  </h3>
+                  <span className="text-[13px] md:text-sm font-bold text-gray-900 leading-tight truncate">
+                    {model}
+                  </span>
+                </div>
+                
+                <div className="flex items-center gap-1.5 text-[11px] md:text-xs text-gray-600">
+                  <span className="font-normal">{color}</span>
+                  <span className="text-gray-300">•</span>
+                  <span className="font-normal">{year}</span>
+                  <span className="text-gray-300">•</span>
+                  <span className="truncate font-normal">{formatCityState(cityState)}</span>
+                </div>
               </div>
 
-              <div className="flex items-baseline gap-1.5 mt-auto">
+              {/* CORREÇÃO: Posição fixa na parte inferior */}
+              <div className="flex items-baseline gap-1.5 flex-shrink-0">
                 <span className="text-[15px] md:text-lg font-bold text-gray-900 leading-tight">
                   {price}
                 </span>
@@ -109,7 +112,7 @@ export function AuctionCardHorizontalVehicle({
                   e.stopPropagation()
                   onToggleFavorite()
                 }}
-                className="p-1.5 hover:bg-gray-100 rounded-lg transition-all duration-200 active:scale-95"
+                className="p-1.5 hover:bg-gray-100 rounded-lg transition-all duration-200 active:scale-95 flex-shrink-0"
               >
                 <Heart
                   className={`w-4 h-4 transition-colors ${
