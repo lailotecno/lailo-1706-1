@@ -22,9 +22,10 @@ export const AuctionCard: React.FC<AuctionCardProps> = ({ auction, viewMode }) =
     }).format(amount);
   };
 
-  const formatTimeRemaining = (endDate: Date) => {
+  const formatTimeRemaining = (endDate: string) => {
     const now = new Date();
-    const diff = endDate.getTime() - now.getTime();
+    const end = new Date(endDate);
+    const diff = end.getTime() - now.getTime();
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
     const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
     
@@ -35,11 +36,18 @@ export const AuctionCard: React.FC<AuctionCardProps> = ({ auction, viewMode }) =
   };
 
   const calculateDiscount = () => {
-    if (!auction.appraisedValue || auction.appraisedValue <= auction.currentBid) {
+    if (!auction.appraised_value || auction.appraised_value <= auction.initial_bid_value) {
       return null;
     }
-    const discount = ((auction.appraisedValue - auction.currentBid) / auction.appraisedValue) * 100;
+    const discount = ((auction.appraised_value - auction.initial_bid_value) / auction.appraised_value) * 100;
     return discount > 0 ? Math.round(discount) : null;
+  };
+
+  const isNew = () => {
+    const now = new Date();
+    const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    const scrapedDate = new Date(auction.data_scraped);
+    return scrapedDate >= twentyFourHoursAgo;
   };
 
   const handleToggleFavorite = () => {
@@ -47,33 +55,18 @@ export const AuctionCard: React.FC<AuctionCardProps> = ({ auction, viewMode }) =
   };
 
   const handleLink = () => {
-    // TODO: Navigate to auction details
-    console.log('Navigate to auction:', auction.id);
+    window.open(auction.href, '_blank');
   };
 
-  // Extract vehicle information from title for vehicle-specific cards
-  const extractVehicleInfo = (title: string) => {
-    // Try to extract brand, model, and year from title
-    // This is a simple extraction - you might want to improve this logic
-    const parts = title.split(' ');
-    const brand = parts[0] || '';
-    const model = parts[1] || '';
-    const yearMatch = title.match(/\b(19|20)\d{2}\b/);
-    const year = yearMatch ? yearMatch[0] : '';
-    
-    return { brand, model, year };
-  };
-
-  const isVehicle = auction.category === 'Veículos';
-  const vehicleInfo = isVehicle ? extractVehicleInfo(auction.title) : null;
+  const isVehicle = auction.type === 'vehicle';
 
   // Create tags array with only origem and etapa
   const tags = [];
-  if (auction.origem) tags.push(auction.origem);
-  if (auction.etapa) tags.push(auction.etapa);
+  if (auction.origin) tags.push(auction.origin);
+  if (auction.stage) tags.push(auction.stage);
 
   // Mock area for properties (this would come from database)
-  const mockArea = isVehicle ? undefined : '85m²';
+  const mockArea = isVehicle ? undefined : `${auction.useful_area_m2}m²`;
 
   // Calculate discount
   const discount = calculateDiscount();
@@ -81,58 +74,58 @@ export const AuctionCard: React.FC<AuctionCardProps> = ({ auction, viewMode }) =
 
   // Common props for all card types
   const commonProps = {
-    price: formatCurrency(auction.currentBid),
-    imageUrl: auction.imageUrl,
+    price: formatCurrency(auction.initial_bid_value),
+    imageUrl: auction.image,
     isFavorited,
     onToggleFavorite: handleToggleFavorite,
     onLink: handleLink,
-    isNew: auction.isNew,
-    date: formatTimeRemaining(auction.endDate),
+    isNew: isNew(),
+    date: formatTimeRemaining(auction.end_date),
     tags: tags,
     discount: discountText,
-    appraisedValue: auction.appraisedValue ? formatCurrency(auction.appraisedValue) : undefined,
+    appraisedValue: auction.appraised_value ? formatCurrency(auction.appraised_value) : undefined,
   };
 
   if (viewMode === 'horizontal') {
-    if (isVehicle && vehicleInfo) {
+    if (isVehicle) {
       return (
         <AuctionCardHorizontalVehicle
           {...commonProps}
-          brand={vehicleInfo.brand}
-          model={vehicleInfo.model}
-          color={auction.color || "Prata"}
-          year={auction.year || vehicleInfo.year}
-          cityState={auction.location}
+          brand={auction.brand || "Não informado"}
+          model={auction.model || "Não informado"}
+          color={auction.color || "Não informado"}
+          year={auction.year?.toString() || "N/A"}
+          cityState={`${auction.city}/${auction.state}`}
         />
       );
     } else {
       return (
         <AuctionCardHorizontalBase
           {...commonProps}
-          titleLeft={auction.title}
-          subtitle={`${auction.description} – ${auction.location}`}
+          titleLeft={auction.property_type || "Imóvel"}
+          subtitle={`${auction.property_address} – ${auction.city}, ${auction.state}`}
           area={mockArea}
         />
       );
     }
   } else {
-    if (isVehicle && vehicleInfo) {
+    if (isVehicle) {
       return (
         <AuctionCardVerticalVehicle
           {...commonProps}
-          brand={vehicleInfo.brand}
-          model={vehicleInfo.model}
-          color={auction.color || "Prata"}
-          year={auction.year || vehicleInfo.year}
-          cityState={auction.location}
+          brand={auction.brand || "Não informado"}
+          model={auction.model || "Não informado"}
+          color={auction.color || "Não informado"}
+          year={auction.year?.toString() || "N/A"}
+          cityState={`${auction.city}/${auction.state}`}
         />
       );
     } else {
       return (
         <AuctionCardVerticalBase
           {...commonProps}
-          titleLeft={auction.title}
-          subtitle={`${auction.description} – ${auction.location}`}
+          titleLeft={auction.property_type || "Imóvel"}
+          subtitle={`${auction.property_address} – ${auction.city}, ${auction.state}`}
           area={mockArea}
         />
       );
