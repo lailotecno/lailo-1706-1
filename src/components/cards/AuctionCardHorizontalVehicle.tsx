@@ -108,8 +108,8 @@ export function AuctionCardHorizontalVehicle({
                 )}
               </div>
 
-              {/* CORREÇÃO: Posição fixa na parte inferior - REMOVIDO appraisedValue */}
-              <div className="flex items-baseline gap-1.5 flex-shrink-0">
+              {/* CORREÇÃO: Posição fixa na parte inferior + DESKTOP: +4px de espaçamento */}
+              <div className="flex items-baseline gap-1.5 flex-shrink-0 mt-1 md:mt-2">
                 <span className="text-[15px] md:text-lg font-bold text-gray-900 leading-tight">
                   {price}
                 </span>
