@@ -37,11 +37,11 @@ export function AuctionCardVerticalBase({
 }: AuctionCardVerticalBaseProps) {
   return (
     <div className="group w-full bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-lg hover:border-gray-200 transition-all duration-300 p-4 cursor-pointer">
-      <div className="relative mb-4 overflow-hidden rounded-xl bg-gray-100">
+      <div className="relative mb-4 overflow-hidden rounded-xl bg-gray-100 aspect-[16/9]">
         <img
           src={imageUrl}
           alt={titleLeft}
-          className="w-full aspect-[16/9] object-cover group-hover:scale-105 transition-transform duration-500"
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
         />
         {/* Badge "Novo" sempre presente no DOM, mas controlado por visibilidade */}
         <div className={`absolute top-3 left-3 bg-gradient-to-r from-yellow-400 to-orange-400 text-white text-xs font-bold uppercase px-2.5 py-1 rounded-lg shadow-sm transition-opacity duration-200 ${
