@@ -1,5 +1,5 @@
 import * as React from "react"
-import { Check, ChevronDown, Loader2 } from "lucide-react"
+import { Check, ChevronDown } from "lucide-react"
 import { cn } from "../../lib/utils"
 import { Button } from "../ui/button"
 import {
@@ -23,7 +23,6 @@ interface ComboBoxSearchProps {
   placeholder?: string
   searchPlaceholder?: string
   disabled?: boolean
-  loading?: boolean
   className?: string
 }
 
@@ -34,7 +33,6 @@ export const ComboBoxSearch: React.FC<ComboBoxSearchProps> = ({
   placeholder = "Selecione...",
   searchPlaceholder = "Buscar...",
   disabled = false,
-  loading = false,
   className
 }) => {
   const [open, setOpen] = React.useState(false)
@@ -105,20 +103,6 @@ export const ComboBoxSearch: React.FC<ComboBoxSearchProps> = ({
     setOpen(false)
   }
 
-  // 🔄 Determinar o texto do placeholder baseado no estado
-  const getPlaceholderText = () => {
-    if (loading) {
-      return "Carregando..."
-    }
-    if (disabled && !loading) {
-      return "Selecione um estado primeiro"
-    }
-    return selectedOption?.label || placeholder
-  }
-
-  // 🔄 Determinar se deve mostrar o ícone de loading
-  const showLoadingIcon = loading && !disabled
-
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -126,68 +110,40 @@ export const ComboBoxSearch: React.FC<ComboBoxSearchProps> = ({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className={cn(
-            "w-full justify-between border-gray-200 hover:border-gray-300 rounded-xl relative z-10",
-            (disabled || loading) && "cursor-not-allowed",
-            loading && "bg-gray-50",
-            className
-          )}
-          disabled={disabled || loading}
+          className={cn("w-full justify-between border-gray-200 hover:border-gray-300 rounded-xl relative z-10", className)}
+          disabled={disabled}
         >
           <span className={cn(
-            "truncate text-left flex items-center gap-2",
-            !selectedOption && "text-gray-500",
-            loading && "text-gray-400"
+            "truncate text-left",
+            !selectedOption && "text-gray-500"
           )}>
-            {/* 🔄 Ícone de loading quando carregando */}
-            {showLoadingIcon && (
-              <Loader2 className="w-4 h-4 animate-spin text-blue-500" />
-            )}
-            {getPlaceholderText()}
+            {selectedOption?.label || placeholder}
           </span>
-          <ChevronDown className={cn(
-            "ml-2 h-4 w-4 shrink-0 opacity-50",
-            loading && "opacity-30"
-          )} />
+          <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-full p-0" align="start">
         <Command>
-          <CommandInput 
-            placeholder={loading ? "Carregando..." : searchPlaceholder}
-            disabled={loading}
-          />
+          <CommandInput placeholder={searchPlaceholder} />
           <CommandList>
-            {/* 🔄 Estado de loading */}
-            {loading ? (
-              <div className="flex items-center justify-center py-6">
-                <div className="flex items-center gap-2 text-sm text-gray-500">
-                  <Loader2 className="w-4 h-4 animate-spin text-blue-500" />
-                  <span>Carregando opções...</span>
-                </div>
-              </div>
-            ) : (
-              <>
-                <CommandEmpty>Nenhum resultado encontrado.</CommandEmpty>
-                <CommandGroup>
-                  {options.map((option) => (
-                    <CommandItem
-                      key={option.value}
-                      value={option.value}
-                      onSelect={handleSelect}
-                    >
-                      <Check
-                        className={cn(
-                          "mr-2 h-4 w-4",
-                          value === option.value ? "opacity-100" : "opacity-0"
-                        )}
-                      />
-                      {option.label}
-                    </CommandItem>
-                  ))}
-                </CommandGroup>
-              </>
-            )}
+            <CommandEmpty>Nenhum resultado encontrado.</CommandEmpty>
+            <CommandGroup>
+              {options.map((option) => (
+                <CommandItem
+                  key={option.value}
+                  value={option.value}
+                  onSelect={handleSelect}
+                >
+                  <Check
+                    className={cn(
+                      "mr-2 h-4 w-4",
+                      value === option.value ? "opacity-100" : "opacity-0"
+                    )}
+                  />
+                  {option.label}
+                </CommandItem>
+              ))}
+            </CommandGroup>
           </CommandList>
         </Command>
       </PopoverContent>

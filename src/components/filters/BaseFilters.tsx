@@ -39,47 +39,31 @@ export const BaseFilters: React.FC<BaseFiltersProps> = React.memo(({
 }) => {
   const [municipios, setMunicipios] = React.useState<Municipio[]>([])
   const [loadingMunicipios, setLoadingMunicipios] = React.useState(false)
-  const [errorMunicipios, setErrorMunicipios] = React.useState<string | null>(null)
 
   // Carregar municípios quando o estado mudar
   React.useEffect(() => {
     if (estado && estado !== "all") {
       console.log('🏛️ BaseFilters - Carregando municípios para estado:', estado);
       setLoadingMunicipios(true)
-      setErrorMunicipios(null)
-      
       fetchMunicipiosByEstado(estado)
         .then(municipiosData => {
           console.log('🏙️ BaseFilters - Municípios carregados:', municipiosData.length);
           setMunicipios(municipiosData);
-          setErrorMunicipios(null);
         })
         .catch(error => {
           console.error('❌ Erro ao carregar municípios:', error)
           setMunicipios([])
-          setErrorMunicipios('Erro ao carregar cidades. Tente novamente.')
         })
         .finally(() => setLoadingMunicipios(false))
     } else {
       console.log('🏛️ BaseFilters - Limpando municípios (estado vazio ou "all")');
       setMunicipios([])
-      setLoadingMunicipios(false)
-      setErrorMunicipios(null)
     }
   }, [estado])
 
   // 🚀 OTIMIZAÇÃO: Memoizar opções que não mudam
   const estados = React.useMemo(() => getEstadosOptions(), []);
-  const cidades = React.useMemo(() => {
-    // Se há erro, mostrar opção de erro
-    if (errorMunicipios) {
-      return [
-        { value: "all", label: "Todas as cidades" },
-        { value: "error", label: errorMunicipios }
-      ];
-    }
-    return getMunicipiosOptions(municipios);
-  }, [municipios, errorMunicipios]);
+  const cidades = React.useMemo(() => getMunicipiosOptions(municipios), [municipios]);
 
   const origemOptions = React.useMemo(() => [
     { value: "judicial", label: "Judicial" },
@@ -114,16 +98,8 @@ export const BaseFilters: React.FC<BaseFiltersProps> = React.memo(({
       newValue: value
     })
     
-    // Não permitir seleção da opção de erro
-    if (value === "error") {
-      return;
-    }
-    
     onCidadeChange(value)
   }, [onCidadeChange]);
-
-  // 🔄 Determinar se o campo de cidade deve estar desabilitado
-  const isCidadeDisabled = !estado || estado === "all" || loadingMunicipios || !!errorMunicipios;
 
   return (
     <div className="space-y-6">
@@ -144,36 +120,10 @@ export const BaseFilters: React.FC<BaseFiltersProps> = React.memo(({
             options={cidades}
             value={cidade}
             onValueChange={handleCidadeChange}
-            placeholder={
-              !estado || estado === "all" 
-                ? "Selecione um estado primeiro"
-                : errorMunicipios 
-                ? "Erro ao carregar cidades"
-                : "Cidade"
-            }
+            placeholder="Cidade"
             searchPlaceholder="Buscar cidade..."
-            disabled={isCidadeDisabled}
-            loading={loadingMunicipios}
+            disabled={!estado || estado === "all" || loadingMunicipios}
           />
-          
-          {/* 🔄 Mensagem de status para cidades */}
-          <div className="min-h-[16px]">
-            {errorMunicipios && (
-              <p className="text-xs text-red-500 mt-1">
-                {errorMunicipios}
-              </p>
-            )}
-            {loadingMunicipios && (
-              <p className="text-xs text-blue-500 mt-1">
-                Carregando cidades...
-              </p>
-            )}
-            {!loadingMunicipios && !errorMunicipios && municipios.length > 0 && (
-              <p className="text-xs text-gray-500 mt-1">
-                {municipios.length} cidades disponíveis
-              </p>
-            )}
-          </div>
         </div>
       </div>
 
