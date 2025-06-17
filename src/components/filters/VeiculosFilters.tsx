@@ -3,6 +3,7 @@ import { ComboBoxSearch } from "./ComboBoxSearch"
 import { RangeSlider } from "./RangeSlider"
 import { BaseFilters } from "./BaseFilters"
 import { useAppContext } from "../../contexts/AppContext"
+import { FILTER_CONFIG, LABEL_CONFIG } from "../../config/constants"
 
 interface VeiculosFiltersProps {
   currentVehicleType?: string;
@@ -141,15 +142,15 @@ export const VeiculosFilters: React.FC<VeiculosFiltersProps> = React.memo(({
               options={marcas}
               value={filters.marca}
               onValueChange={handleMarcaChange}
-              placeholder="Marca"
-              searchPlaceholder="Buscar marca..."
+              placeholder={LABEL_CONFIG.PLACEHOLDERS.SELECT_BRAND}
+              searchPlaceholder={LABEL_CONFIG.PLACEHOLDERS.SEARCH_BRAND}
             />
             <ComboBoxSearch
               options={getModelos(filters.marca)}
               value={filters.modelo}
               onValueChange={handleModeloChange}
-              placeholder="Modelo"
-              searchPlaceholder="Buscar modelo..."
+              placeholder={LABEL_CONFIG.PLACEHOLDERS.SELECT_MODEL}
+              searchPlaceholder={LABEL_CONFIG.PLACEHOLDERS.SEARCH_MODEL}
               disabled={!filters.marca || filters.marca === "all"}
             />
           </div>
@@ -165,8 +166,8 @@ export const VeiculosFilters: React.FC<VeiculosFiltersProps> = React.memo(({
           options={cores}
           value={filters.cor}
           onValueChange={handleCorChange}
-          placeholder="Cor"
-          searchPlaceholder="Buscar cor..."
+          placeholder={LABEL_CONFIG.PLACEHOLDERS.SELECT_COLOR}
+          searchPlaceholder={LABEL_CONFIG.PLACEHOLDERS.SEARCH_COLOR}
         />
       </div>
 
@@ -176,8 +177,8 @@ export const VeiculosFilters: React.FC<VeiculosFiltersProps> = React.memo(({
           Ano
         </label>
         <RangeSlider
-          min={1990}
-          max={2024}
+          min={FILTER_CONFIG.DEFAULT_RANGES.VEHICLE_YEAR.MIN}
+          max={FILTER_CONFIG.DEFAULT_RANGES.VEHICLE_YEAR.MAX}
           step={1}
           value={filters.ano}
           onValueChange={handleAnoChange}
@@ -190,9 +191,9 @@ export const VeiculosFilters: React.FC<VeiculosFiltersProps> = React.memo(({
           Faixa de preço
         </label>
         <RangeSlider
-          min={0}
-          max={500000}
-          step={5000}
+          min={FILTER_CONFIG.DEFAULT_RANGES.VEHICLE_PRICE.MIN}
+          max={FILTER_CONFIG.DEFAULT_RANGES.VEHICLE_PRICE.MAX}
+          step={FILTER_CONFIG.DEFAULT_RANGES.VEHICLE_PRICE.STEP}
           value={filters.preco}
           onValueChange={handlePrecoChange}
           prefix="R$ "

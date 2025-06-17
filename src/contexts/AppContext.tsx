@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
 import { ViewMode, SortOption } from '../types/auction';
+import { FILTER_CONFIG, STORAGE_CONFIG } from '../config/constants';
 
 // ===== TYPES =====
 interface ImoveisFilters {
@@ -50,8 +51,8 @@ interface AppState {
 const defaultImoveisFilters: ImoveisFilters = {
   estado: "",
   cidade: "",
-  area: [0, 1000],
-  valor: [0, 5000000],
+  area: [FILTER_CONFIG.DEFAULT_RANGES.PROPERTY_AREA.MIN, FILTER_CONFIG.DEFAULT_RANGES.PROPERTY_AREA.MAX],
+  valor: [FILTER_CONFIG.DEFAULT_RANGES.PROPERTY_VALUE.MIN, FILTER_CONFIG.DEFAULT_RANGES.PROPERTY_VALUE.MAX],
   formato: "",
   origem: [],
   etapa: []
@@ -63,8 +64,8 @@ const defaultVeiculosFilters: VeiculosFilters = {
   marca: "",
   modelo: "",
   cor: "",
-  ano: [1990, 2024],
-  preco: [0, 500000],
+  ano: [FILTER_CONFIG.DEFAULT_RANGES.VEHICLE_YEAR.MIN, FILTER_CONFIG.DEFAULT_RANGES.VEHICLE_YEAR.MAX],
+  preco: [FILTER_CONFIG.DEFAULT_RANGES.VEHICLE_PRICE.MIN, FILTER_CONFIG.DEFAULT_RANGES.VEHICLE_PRICE.MAX],
   formato: "",
   origem: [],
   etapa: []
@@ -238,8 +239,6 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 // ===== STORAGE UTILITIES =====
-const STORAGE_KEY = 'buscador-preferences';
-
 const saveToStorage = (state: AppState) => {
   try {
     // Salvar apenas dados relevantes (não UI state temporário)
@@ -252,7 +251,7 @@ const saveToStorage = (state: AppState) => {
       // Não salvar ui state pois é temporário
     };
     
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
+    localStorage.setItem(STORAGE_CONFIG.KEYS.USER_PREFERENCES, JSON.stringify(dataToSave));
   } catch (error) {
     console.warn('Erro ao salvar no localStorage:', error);
   }
@@ -260,7 +259,7 @@ const saveToStorage = (state: AppState) => {
 
 const loadFromStorage = (): Partial<AppState> => {
   try {
-    const saved = localStorage.getItem(STORAGE_KEY);
+    const saved = localStorage.getItem(STORAGE_CONFIG.KEYS.USER_PREFERENCES);
     if (!saved) {
       return {};
     }
@@ -333,7 +332,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       saveToStorage(state);
-    }, 500); // Debounce de 500ms
+    }, FILTER_CONFIG.DEBOUNCE_MS);
 
     return () => clearTimeout(timeoutId);
   }, [state]);

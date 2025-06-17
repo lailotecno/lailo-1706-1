@@ -1,5 +1,6 @@
 import { Auction, Category, SortOption, Filters } from '../types/auction';
 import { DateUtils } from '../utils/dateUtils';
+import { MAPPING_CONFIG, DATE_CONFIG } from '../config/constants';
 
 export const mockAuctions: Auction[] = [
   // IMÓVEIS - Apartamentos
@@ -434,43 +435,12 @@ export function getAuctionsByCategory(
     // Filter by specific type if provided
     if (type && type !== 'todos') {
       if (category === 'veiculos') {
-        // Map vehicle types
-        const typeMap: Record<string, string[]> = {
-          'carros': ['Carro'],
-          'motos': ['Moto'],
-          'caminhoes': ['Caminhão'],
-          'onibus': ['Ônibus'],
-          'maquinas': ['Máquina'],
-          'apoio': ['Reboque'],
-          'embarcacoes': ['Embarcação'],
-          'recreativos': ['Recreativo'],
-          'nao-informado': ['Não Informado']
-        };
-        
-        const allowedTypes = typeMap[type];
+        const allowedTypes = MAPPING_CONFIG.VEHICLE_TYPE_MAP[type as keyof typeof MAPPING_CONFIG.VEHICLE_TYPE_MAP];
         if (allowedTypes && !allowedTypes.includes(auction.vehicle_type || '')) {
           return false;
         }
       } else {
-        // Map property types
-        const typeMap: Record<string, string[]> = {
-          'apartamentos': ['Apartamento'],
-          'casas': ['Casa'],
-          'comerciais': ['Comercial'],
-          'compactos': ['Compacto'],
-          'condominios': ['Condomínio'],
-          'galpoes': ['Galpão'],
-          'garagem': ['Garagem'],
-          'hospedagem': ['Hospedagem'],
-          'industriais': ['Industrial'],
-          'mistos': ['Misto'],
-          'predios': ['Prédio'],
-          'rurais': ['Rural'],
-          'terrenos-e-lotes': ['Terreno'],
-          'nao-informado': ['Não Informado']
-        };
-        
-        const allowedTypes = typeMap[type];
+        const allowedTypes = MAPPING_CONFIG.PROPERTY_TYPE_MAP[type as keyof typeof MAPPING_CONFIG.PROPERTY_TYPE_MAP];
         if (allowedTypes && !allowedTypes.includes(auction.property_type || '')) {
           return false;
         }
@@ -488,49 +458,30 @@ export function getAuctionsByCategory(
         return false;
       }
       
-      // Format filter - CORREÇÃO: Mapear valores do filtro para valores do banco
+      // Format filter - CORREÇÃO: Usar mapeamento centralizado
       if (filters.format) {
-        const formatMap: Record<string, string> = {
-          'leilao': 'Presencial', // ou 'Online' ou 'Híbrido' - vamos aceitar qualquer um que não seja venda direta
-          'venda-direta': 'Venda Direta'
-        };
-        
-        const expectedFormat = formatMap[filters.format];
+        const allowedFormats = MAPPING_CONFIG.FORMAT_MAP[filters.format as keyof typeof MAPPING_CONFIG.FORMAT_MAP];
         if (filters.format === 'leilao') {
           // Para leilão, aceitar Presencial, Online ou Híbrido
-          if (!['Presencial', 'Online', 'Híbrido'].includes(auction.format)) {
+          if (!allowedFormats.includes(auction.format)) {
             return false;
           }
-        } else if (expectedFormat && auction.format !== expectedFormat) {
+        } else if (allowedFormats && !allowedFormats.includes(auction.format)) {
           return false;
         }
       }
 
-      // Origin filter (multiple choice) - CORREÇÃO: Mapear valores
+      // Origin filter (multiple choice) - CORREÇÃO: Usar mapeamento centralizado
       if (filters.origin && Array.isArray(filters.origin) && filters.origin.length > 0) {
-        const originMap: Record<string, string> = {
-          'judicial': 'Judicial',
-          'extrajudicial': 'Extrajudicial',
-          'particular': 'Particular',
-          'publico': 'Público'
-        };
-        
-        const mappedOrigins = filters.origin.map(o => originMap[o] || o);
+        const mappedOrigins = filters.origin.map(o => MAPPING_CONFIG.ORIGIN_MAP[o as keyof typeof MAPPING_CONFIG.ORIGIN_MAP] || o);
         if (!mappedOrigins.includes(auction.origin)) {
           return false;
         }
       }
 
-      // Stage filter (multiple choice) - CORREÇÃO: Mapear valores
+      // Stage filter (multiple choice) - CORREÇÃO: Usar mapeamento centralizado
       if (filters.stage && Array.isArray(filters.stage) && filters.stage.length > 0) {
-        const stageMap: Record<string, string> = {
-          'praca-unica': 'Praça única',
-          'primeira': '1ª Praça',
-          'segunda': '2ª Praça',
-          'terceira': '3ª Praça'
-        };
-        
-        const mappedStages = filters.stage.map(s => stageMap[s] || s);
+        const mappedStages = filters.stage.map(s => MAPPING_CONFIG.STAGE_MAP[s as keyof typeof MAPPING_CONFIG.STAGE_MAP] || s);
         if (!mappedStages.includes(auction.stage)) {
           return false;
         }
@@ -676,10 +627,10 @@ export function getAuctionsByCategory(
 
   // Calculate statistics
   try {
-    // 🔧 CORREÇÃO: Usar DateUtils para cálculo de "novos hoje"
+    // 🔧 CORREÇÃO: Usar DateUtils e configuração centralizada para cálculo de "novos hoje"
     const newAuctions = filteredAuctions.filter(auction => {
       if (!auction || !auction.data_scraped) return false;
-      return DateUtils.isWithinLast24Hours(auction.data_scraped);
+      return DateUtils.isWithinLastHours(auction.data_scraped, DATE_CONFIG.NEW_AUCTION_THRESHOLD_HOURS);
     }).length;
 
     const uniqueSites = new Set(filteredAuctions.map(auction => auction.website).filter(Boolean));

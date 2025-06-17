@@ -2,6 +2,7 @@ import * as React from "react"
 import { RangeSlider } from "./RangeSlider"
 import { BaseFilters } from "./BaseFilters"
 import { useAppContext } from "../../contexts/AppContext"
+import { FILTER_CONFIG } from "../../config/constants"
 
 // 🚀 OTIMIZAÇÃO: React.memo para evitar re-renderizações desnecessárias
 export const ImoveisFilters: React.FC = React.memo(() => {
@@ -58,9 +59,9 @@ export const ImoveisFilters: React.FC = React.memo(() => {
           Área
         </label>
         <RangeSlider
-          min={0}
-          max={1000}
-          step={10}
+          min={FILTER_CONFIG.DEFAULT_RANGES.PROPERTY_AREA.MIN}
+          max={FILTER_CONFIG.DEFAULT_RANGES.PROPERTY_AREA.MAX}
+          step={FILTER_CONFIG.DEFAULT_RANGES.PROPERTY_AREA.STEP}
           value={filters.area}
           onValueChange={handleAreaChange}
           suffix="m²"
@@ -73,9 +74,9 @@ export const ImoveisFilters: React.FC = React.memo(() => {
           Valor do lance
         </label>
         <RangeSlider
-          min={0}
-          max={5000000}
-          step={10000}
+          min={FILTER_CONFIG.DEFAULT_RANGES.PROPERTY_VALUE.MIN}
+          max={FILTER_CONFIG.DEFAULT_RANGES.PROPERTY_VALUE.MAX}
+          step={FILTER_CONFIG.DEFAULT_RANGES.PROPERTY_VALUE.STEP}
           value={filters.valor}
           onValueChange={handleValorChange}
           prefix="R$ "

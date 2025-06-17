@@ -15,12 +15,11 @@ import { useAppContext } from '../contexts/AppContext';
 import { useAuctionData } from '../hooks/useAuctionData';
 import { useActiveFilters } from '../hooks/useActiveFilters';
 import { usePagination } from '../hooks/usePagination';
+import { PAGINATION_CONFIG } from '../config/constants';
 
 interface BuscadorListingPageProps {
   category: Category;
 }
-
-const ITEMS_PER_PAGE = 30;
 
 export const BuscadorListingPage: React.FC<BuscadorListingPageProps> = ({ category }) => {
   const { tipo } = useParams<{ tipo: string }>();
@@ -60,7 +59,7 @@ export const BuscadorListingPage: React.FC<BuscadorListingPageProps> = ({ catego
 
   const { currentPage, totalPages, currentAuctions, handlePageChange } = usePagination({
     auctions: filteredAndSortedAuctions,
-    itemsPerPage: ITEMS_PER_PAGE,
+    itemsPerPage: PAGINATION_CONFIG.ITEMS_PER_PAGE,
     dependencies: [state.appliedFilters, state.sortOption, state.searchQuery, currentType]
   });
 

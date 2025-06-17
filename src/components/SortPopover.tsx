@@ -1,6 +1,7 @@
 import React from 'react';
 import { Check, X, ChevronDown } from 'lucide-react';
 import { SortOption } from '../types/auction';
+import { LABEL_CONFIG } from '../config/constants';
 
 interface SortPopoverProps {
   isOpen: boolean;
@@ -23,11 +24,11 @@ export const SortPopover: React.FC<SortPopoverProps> = ({
   }
 
   const sortOptions = [
-    { value: 'newest' as SortOption, label: 'Mais recentes' },
-    { value: 'lowest-bid' as SortOption, label: 'Menor valor' },
-    { value: 'highest-bid' as SortOption, label: 'Maior valor' },
-    { value: 'highest-discount' as SortOption, label: 'Maior desconto' },
-    { value: 'nearest' as SortOption, label: 'Mais próximos' },
+    { value: 'newest' as SortOption, label: LABEL_CONFIG.SORT_LABELS.newest },
+    { value: 'lowest-bid' as SortOption, label: LABEL_CONFIG.SORT_LABELS['lowest-bid'] },
+    { value: 'highest-bid' as SortOption, label: LABEL_CONFIG.SORT_LABELS['highest-bid'] },
+    { value: 'highest-discount' as SortOption, label: LABEL_CONFIG.SORT_LABELS['highest-discount'] },
+    { value: 'nearest' as SortOption, label: LABEL_CONFIG.SORT_LABELS.nearest },
   ];
 
   const handleSelect = (value: SortOption) => {

@@ -52,11 +52,6 @@ export const RangeSlider: React.FC<RangeSliderProps> = React.memo(({
     onValueChange(newValue)
   }, [min, max, safeValue, onValueChange])
 
-  // 🚀 OTIMIZAÇÃO: Memoizar função de formatação
-  const formatValue = React.useCallback((val: number) => {
-    return `${prefix}${val.toLocaleString('pt-BR')}${suffix}`
-  }, [prefix, suffix])
-
   return (
     <div className={cn("space-y-4", className)}>
       <Slider

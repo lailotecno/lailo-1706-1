@@ -2,6 +2,7 @@ import React, { useMemo, useCallback } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { SortOption } from '../../types/auction';
 import { SortPopover } from '../SortPopover';
+import { LABEL_CONFIG } from '../../config/constants';
 
 interface StatusHeaderProps {
   totalAuctions: number;
@@ -25,16 +26,9 @@ export const StatusHeader: React.FC<StatusHeaderProps> = React.memo(({
   onSortChange,
   onSortClose
 }) => {
-  // 🚀 OTIMIZAÇÃO: Memoizar labels de ordenação
+  // 🚀 OTIMIZAÇÃO: Memoizar labels de ordenação usando configuração centralizada
   const getSortLabel = useCallback((sort: SortOption) => {
-    const labels = {
-      'newest': 'Mais recentes',
-      'lowest-bid': 'Menor valor',
-      'highest-bid': 'Maior valor',
-      'highest-discount': 'Maior desconto',
-      'nearest': 'Mais próximos',
-    };
-    return labels[sort];
+    return LABEL_CONFIG.SORT_LABELS[sort];
   }, []);
 
   // 🚀 OTIMIZAÇÃO: Memoizar texto de status
