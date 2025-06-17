@@ -17,6 +17,11 @@ export const SortPopover: React.FC<SortPopoverProps> = ({
   onSortChange,
   isMobile = false
 }) => {
+  // 🛡️ CORREÇÃO: Verificação defensiva para evitar erro #130
+  if (!isOpen) {
+    return null;
+  }
+
   const sortOptions = [
     { value: 'newest' as SortOption, label: 'Mais recentes' },
     { value: 'lowest-bid' as SortOption, label: 'Menor valor' },
@@ -26,10 +31,12 @@ export const SortPopover: React.FC<SortPopoverProps> = ({
   ];
 
   const handleSelect = (value: SortOption) => {
-    onSortChange(value);
+    try {
+      onSortChange(value);
+    } catch (error) {
+      console.error('❌ Erro ao alterar ordenação:', error);
+    }
   };
-
-  if (!isOpen) return null;
 
   // MOBILE VERSION - Apenas quando isMobile for explicitamente true
   if (isMobile === true) {

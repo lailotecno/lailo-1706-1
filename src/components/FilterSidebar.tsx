@@ -34,13 +34,24 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
   const [isApplying, setIsApplying] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
 
+  // 🛡️ CORREÇÃO: Verificação defensiva para evitar erro #130
+  if (!category) {
+    console.warn('⚠️ FilterSidebar: category prop é obrigatório');
+    return null;
+  }
+
   const handleApplyFilters = async () => {
     setIsApplying(true);
     
     // Simular um pequeno delay para feedback visual
     await new Promise(resolve => setTimeout(resolve, 300));
     
-    onApplyFilters();
+    try {
+      onApplyFilters();
+    } catch (error) {
+      console.error('❌ Erro ao aplicar filtros:', error);
+    }
+    
     setIsApplying(false);
     
     if (isMobile && onClose) {
@@ -54,7 +65,12 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
     // Simular um pequeno delay para feedback visual
     await new Promise(resolve => setTimeout(resolve, 200));
     
-    onClearFilters();
+    try {
+      onClearFilters();
+    } catch (error) {
+      console.error('❌ Erro ao limpar filtros:', error);
+    }
+    
     setIsClearing(false);
   };
 

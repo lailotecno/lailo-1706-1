@@ -14,6 +14,17 @@ export const Pagination: React.FC<PaginationProps> = ({
   onPageChange,
   className = ''
 }) => {
+  // 🛡️ CORREÇÃO: Verificação defensiva para evitar erro #130
+  if (typeof currentPage !== 'number' || typeof totalPages !== 'number' || 
+      currentPage < 1 || totalPages < 1 || !onPageChange) {
+    console.warn('⚠️ Pagination: props inválidos:', { currentPage, totalPages, onPageChange });
+    return null;
+  }
+
+  if (totalPages <= 1) {
+    return null;
+  }
+
   const getVisiblePages = () => {
     const delta = 2;
     const range = [];
@@ -43,24 +54,26 @@ export const Pagination: React.FC<PaginationProps> = ({
   const visiblePages = getVisiblePages();
 
   const handlePageClick = (page: number | string) => {
-    if (typeof page === 'number' && page !== currentPage) {
-      onPageChange(page);
+    if (typeof page === 'number' && page !== currentPage && page >= 1 && page <= totalPages) {
+      try {
+        onPageChange(page);
+      } catch (error) {
+        console.error('❌ Erro ao mudar página:', error);
+      }
     }
   };
 
   const handlePrevious = () => {
     if (currentPage > 1) {
-      onPageChange(currentPage - 1);
+      handlePageClick(currentPage - 1);
     }
   };
 
   const handleNext = () => {
     if (currentPage < totalPages) {
-      onPageChange(currentPage + 1);
+      handlePageClick(currentPage + 1);
     }
   };
-
-  if (totalPages <= 1) return null;
 
   return (
     <div className={`flex items-center justify-center gap-2 ${className}`}>

@@ -377,11 +377,23 @@ export function getAuctionsByCategory(
 ): { auctions: Auction[]; totalSites: number; newAuctions: number } {
   console.log('🔍 getAuctionsByCategory chamada:', { category, type, filters, sort, searchQuery });
   
+  // 🛡️ CORREÇÃO: Verificação defensiva para evitar erro #130
+  if (!category || !Array.isArray(mockAuctions)) {
+    console.warn('⚠️ getAuctionsByCategory: parâmetros inválidos');
+    return { auctions: [], totalSites: 0, newAuctions: 0 };
+  }
+  
   const now = new Date();
   console.log('⏰ Data atual:', now.toISOString());
   
   // Filter by category and active auctions (end_date >= now)
   let filteredAuctions = mockAuctions.filter(auction => {
+    // 🛡️ CORREÇÃO: Verificar se auction é válido
+    if (!auction || typeof auction !== 'object' || !auction._id) {
+      console.warn('⚠️ Auction inválido encontrado:', auction);
+      return false;
+    }
+    
     const endDate = new Date(auction.end_date);
     
     // CORREÇÃO: Verificar se a data é válida primeiro
@@ -475,10 +487,15 @@ export function getAuctionsByCategory(
   console.log(`✅ Após filtro inicial: ${filteredAuctions.length} leilões`);
 
   // Apply filters
-  if (filters) {
+  if (filters && typeof filters === 'object') {
     const initialCount = filteredAuctions.length;
     
     filteredAuctions = filteredAuctions.filter(auction => {
+      // 🛡️ CORREÇÃO: Verificar se auction ainda é válido
+      if (!auction || typeof auction !== 'object') {
+        return false;
+      }
+      
       // Format filter - CORREÇÃO: Mapear valores do filtro para valores do banco
       if (filters.format) {
         const formatMap: Record<string, string> = {
@@ -500,7 +517,7 @@ export function getAuctionsByCategory(
       }
 
       // Origin filter (multiple choice) - CORREÇÃO: Mapear valores
-      if (filters.origin && filters.origin.length > 0) {
+      if (filters.origin && Array.isArray(filters.origin) && filters.origin.length > 0) {
         const originMap: Record<string, string> = {
           'judicial': 'Judicial',
           'extrajudicial': 'Extrajudicial',
@@ -516,7 +533,7 @@ export function getAuctionsByCategory(
       }
 
       // Stage filter (multiple choice) - CORREÇÃO: Mapear valores
-      if (filters.stage && filters.stage.length > 0) {
+      if (filters.stage && Array.isArray(filters.stage) && filters.stage.length > 0) {
         const stageMap: Record<string, string> = {
           'praca-unica': 'Praça única',
           'primeira': '1ª Praça',
@@ -546,9 +563,10 @@ export function getAuctionsByCategory(
       // Property-specific filters
       if (auction.type === 'property') {
         // Useful area filter
-        if (filters.useful_area_m2 && auction.useful_area_m2) {
+        if (filters.useful_area_m2 && Array.isArray(filters.useful_area_m2) && auction.useful_area_m2) {
           const [min, max] = filters.useful_area_m2;
-          if (auction.useful_area_m2 < min || auction.useful_area_m2 > max) {
+          if (typeof min === 'number' && typeof max === 'number' && 
+              (auction.useful_area_m2 < min || auction.useful_area_m2 > max)) {
             console.log(`❌ Auction ${auction._id} filtered out by area: ${auction.useful_area_m2} not in range [${min}, ${max}]`);
             return false;
           }
@@ -609,9 +627,10 @@ export function getAuctionsByCategory(
         }
 
         // Year filter
-        if (filters.year && auction.year) {
+        if (filters.year && Array.isArray(filters.year) && auction.year) {
           const [min, max] = filters.year;
-          if (auction.year < min || auction.year > max) {
+          if (typeof min === 'number' && typeof max === 'number' && 
+              (auction.year < min || auction.year > max)) {
             console.log(`❌ Auction ${auction._id} filtered out by year: ${auction.year} not in range [${min}, ${max}]`);
             return false;
           }
@@ -619,9 +638,10 @@ export function getAuctionsByCategory(
       }
 
       // Initial bid value filter
-      if (filters.initial_bid_value) {
+      if (filters.initial_bid_value && Array.isArray(filters.initial_bid_value)) {
         const [min, max] = filters.initial_bid_value;
-        if (auction.initial_bid_value < min || auction.initial_bid_value > max) {
+        if (typeof min === 'number' && typeof max === 'number' && 
+            (auction.initial_bid_value < min || auction.initial_bid_value > max)) {
           console.log(`❌ Auction ${auction._id} filtered out by price: ${auction.initial_bid_value} not in range [${min}, ${max}]`);
           return false;
         }
@@ -635,11 +655,16 @@ export function getAuctionsByCategory(
   }
 
   // Apply search query
-  if (searchQuery && searchQuery.trim()) {
+  if (searchQuery && typeof searchQuery === 'string' && searchQuery.trim()) {
     const query = searchQuery.toLowerCase().trim();
     const initialCount = filteredAuctions.length;
     
     filteredAuctions = filteredAuctions.filter(auction => {
+      // 🛡️ CORREÇÃO: Verificar se auction ainda é válido
+      if (!auction || typeof auction !== 'object') {
+        return false;
+      }
+      
       const searchableText = [
         auction.property_type,
         auction.property_address,
@@ -663,44 +688,66 @@ export function getAuctionsByCategory(
   }
 
   // Apply sorting
-  if (sort) {
+  if (sort && filteredAuctions.length > 0) {
     console.log(`🔄 Aplicando ordenação: ${sort}`);
-    filteredAuctions.sort((a, b) => {
-      switch (sort) {
-        case 'newest':
-          return new Date(b.updated).getTime() - new Date(a.updated).getTime();
-        case 'lowest-bid':
-          return a.initial_bid_value - b.initial_bid_value;
-        case 'highest-bid':
-          return b.initial_bid_value - a.initial_bid_value;
-        case 'highest-discount':
-          const discountA = a.appraised_value ? ((a.appraised_value - a.initial_bid_value) / a.appraised_value) * 100 : 0;
-          const discountB = b.appraised_value ? ((b.appraised_value - b.initial_bid_value) / b.appraised_value) * 100 : 0;
-          return discountB - discountA;
-        case 'nearest':
-          return new Date(a.end_date).getTime() - new Date(b.end_date).getTime();
-        default:
+    try {
+      filteredAuctions.sort((a, b) => {
+        // 🛡️ CORREÇÃO: Verificar se ambos os auctions são válidos
+        if (!a || !b || typeof a !== 'object' || typeof b !== 'object') {
           return 0;
-      }
-    });
+        }
+        
+        switch (sort) {
+          case 'newest':
+            const dateA = new Date(a.updated);
+            const dateB = new Date(b.updated);
+            if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) return 0;
+            return dateB.getTime() - dateA.getTime();
+          case 'lowest-bid':
+            return (a.initial_bid_value || 0) - (b.initial_bid_value || 0);
+          case 'highest-bid':
+            return (b.initial_bid_value || 0) - (a.initial_bid_value || 0);
+          case 'highest-discount':
+            const discountA = a.appraised_value ? ((a.appraised_value - a.initial_bid_value) / a.appraised_value) * 100 : 0;
+            const discountB = b.appraised_value ? ((b.appraised_value - b.initial_bid_value) / b.appraised_value) * 100 : 0;
+            return discountB - discountA;
+          case 'nearest':
+            const endA = new Date(a.end_date);
+            const endB = new Date(b.end_date);
+            if (isNaN(endA.getTime()) || isNaN(endB.getTime())) return 0;
+            return endA.getTime() - endB.getTime();
+          default:
+            return 0;
+        }
+      });
+    } catch (error) {
+      console.error('❌ Erro ao ordenar leilões:', error);
+    }
   }
 
   // Calculate statistics
-  const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-  const newAuctions = filteredAuctions.filter(auction => 
-    new Date(auction.data_scraped) >= twentyFourHoursAgo
-  ).length;
+  try {
+    const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    const newAuctions = filteredAuctions.filter(auction => {
+      if (!auction || !auction.data_scraped) return false;
+      const scrapedDate = new Date(auction.data_scraped);
+      return !isNaN(scrapedDate.getTime()) && scrapedDate >= twentyFourHoursAgo;
+    }).length;
 
-  const uniqueSites = new Set(filteredAuctions.map(auction => auction.website));
-  const totalSites = uniqueSites.size;
+    const uniqueSites = new Set(filteredAuctions.map(auction => auction.website).filter(Boolean));
+    const totalSites = uniqueSites.size;
 
-  const result = {
-    auctions: filteredAuctions,
-    totalSites,
-    newAuctions
-  };
-  
-  console.log('📊 Resultado final:', result);
-  
-  return result;
+    const result = {
+      auctions: filteredAuctions,
+      totalSites,
+      newAuctions
+    };
+    
+    console.log('📊 Resultado final:', result);
+    
+    return result;
+  } catch (error) {
+    console.error('❌ Erro ao calcular estatísticas:', error);
+    return { auctions: filteredAuctions, totalSites: 0, newAuctions: 0 };
+  }
 }

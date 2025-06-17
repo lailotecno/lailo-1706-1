@@ -19,6 +19,12 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   searchQuery,
   className = ''
 }) => {
+  // 🛡️ CORREÇÃO: Verificação defensiva para evitar erro #130
+  if (!category) {
+    console.warn('⚠️ EmptyState: category prop é obrigatório');
+    return null;
+  }
+
   const isVehicles = category === 'veiculos';
   
   // Diferentes cenários de empty state
@@ -138,7 +144,13 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
       <div className="flex flex-col sm:flex-row gap-3 w-full max-w-sm mx-auto">
         {content.primaryAction && (
           <button
-            onClick={content.primaryAction.action}
+            onClick={() => {
+              try {
+                content.primaryAction?.action?.();
+              } catch (error) {
+                console.error('❌ Erro ao executar ação primária:', error);
+              }
+            }}
             className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold py-3 px-6 rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl active:scale-[0.98] flex items-center justify-center gap-2"
           >
             <RotateCcw className="w-4 h-4" />
@@ -148,7 +160,13 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
         
         {content.secondaryAction && (
           <button
-            onClick={content.secondaryAction.action}
+            onClick={() => {
+              try {
+                content.secondaryAction?.action?.();
+              } catch (error) {
+                console.error('❌ Erro ao executar ação secundária:', error);
+              }
+            }}
             className="flex-1 bg-white text-gray-700 font-semibold py-3 px-6 rounded-xl border border-gray-300 hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 active:scale-[0.98] flex items-center justify-center gap-2"
           >
             <Filter className="w-4 h-4" />
