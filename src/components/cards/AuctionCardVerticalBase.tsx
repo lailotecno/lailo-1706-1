@@ -116,7 +116,7 @@ export function AuctionCardVerticalBase({
 
         <div className="h-px bg-gray-100"></div>
 
-        <div className="flex items-center justify-between pt-1">
+        <div className="flex items-center justify-between pt-3">
           <div className="flex flex-wrap gap-1.5">
             {tags && tags.slice(0, 2).map((tag, index) => (
               <span 
