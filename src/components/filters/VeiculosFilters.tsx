@@ -118,6 +118,7 @@ export const VeiculosFilters: React.FC<VeiculosFiltersProps> = ({
   const isVendaDireta = filters.formato === "venda-direta"
   
   // Verificar se deve mostrar os filtros de marca e modelo
+  // CORREÇÃO: Agora também oculta para 'nao-informado'
   const shouldShowBrandModelFilters = currentVehicleType !== 'todos' && currentVehicleType !== 'nao-informado'
 
   const handleEstadoChange = (value: string) => {
