@@ -38,7 +38,7 @@ export function AuctionCardHorizontalBase({
   return (
     <div className="group w-full bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-lg hover:border-gray-200 transition-all duration-300 p-3 md:p-4 cursor-pointer">
       <div className="flex gap-3 md:gap-4 mb-3">
-        <div className="relative w-20 md:w-24 rounded-xl overflow-hidden flex-shrink-0 bg-gray-100 aspect-[4/3]">
+        <div className="relative h-[62px] md:h-[70px] w-20 md:w-24 rounded-xl overflow-hidden flex-shrink-0 bg-gray-100">
           <img
             src={imageUrl}
             alt={titleLeft}
@@ -92,6 +92,11 @@ export function AuctionCardHorizontalBase({
                 <span className="text-[15px] md:text-lg font-bold text-gray-900 leading-tight">
                   {price}
                 </span>
+                {appraisedValue && (
+                  <span className="text-[10px] md:text-xs text-gray-500">
+                    {appraisedValue}
+                  </span>
+                )}
                 {discount && (
                   <span className="bg-gradient-to-r from-green-500 to-green-600 text-white text-[10px] md:text-xs font-bold uppercase px-1.5 py-0.5 md:px-2 md:py-0.5 rounded-md shadow-sm">
                     {discount}
