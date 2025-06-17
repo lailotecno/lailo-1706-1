@@ -50,12 +50,6 @@ export function AuctionCardVerticalVehicle({
           alt={`${brand} ${model}`}
           className="w-full aspect-[16/9] object-cover group-hover:scale-105 transition-transform duration-500"
         />
-        {/* Badge "Novo" sempre presente no DOM, mas controlado por visibilidade */}
-        <div className={`absolute top-3 left-3 bg-gradient-to-r from-yellow-400 to-orange-400 text-white text-xs font-bold uppercase px-2.5 py-1 rounded-lg shadow-sm transition-opacity duration-200 ${
-          isNew ? 'opacity-100' : 'opacity-0 pointer-events-none'
-        }`}>
-          Novo
-        </div>
         {onToggleFavorite && (
           <button
             onClick={(e) => {
@@ -104,11 +98,6 @@ export function AuctionCardVerticalVehicle({
             <span className="text-xl md:text-lg font-bold text-gray-900">
               {price}
             </span>
-            {discount && (
-              <span className="bg-gradient-to-r from-green-500 to-green-600 text-white text-xs font-bold uppercase px-2.5 py-1 rounded-lg shadow-sm">
-                {discount}
-              </span>
-            )}
           </div>
         </div>
 
