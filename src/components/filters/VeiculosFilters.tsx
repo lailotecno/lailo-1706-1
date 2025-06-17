@@ -36,21 +36,34 @@ export const VeiculosFilters: React.FC<VeiculosFiltersProps> = ({
   React.useEffect(() => {
     // CORREÇÃO: Só carregar municípios se estado não for vazio e não for "all"
     if (filters.estado && filters.estado !== "all") {
+      console.log('🏛️ VeiculosFilters - Carregando municípios para estado:', filters.estado);
       setLoadingMunicipios(true)
       fetchMunicipiosByEstado(filters.estado)
-        .then(setMunicipios)
+        .then(municipiosData => {
+          console.log('🏙️ VeiculosFilters - Municípios carregados:', municipiosData.length);
+          setMunicipios(municipiosData);
+        })
         .catch(error => {
-          console.error('Erro ao carregar municípios:', error)
+          console.error('❌ Erro ao carregar municípios:', error)
           setMunicipios([])
         })
         .finally(() => setLoadingMunicipios(false))
     } else {
+      console.log('🏛️ VeiculosFilters - Limpando municípios (estado vazio ou "all")');
       setMunicipios([])
     }
   }, [filters.estado])
 
   const estados = getEstadosOptions()
   const cidades = getMunicipiosOptions(municipios)
+
+  console.log('🚗 VeiculosFilters - Estado atual:', {
+    filters,
+    currentVehicleType,
+    estadosDisponiveis: estados.length,
+    cidadesDisponiveis: cidades.length,
+    loadingMunicipios
+  });
 
   const marcas = [
     { value: "all", label: "Todas as marcas" }, // Mudou de "" para "all"

@@ -31,21 +31,33 @@ export const ImoveisFilters: React.FC<ImoveisFiltersProps> = ({
   React.useEffect(() => {
     // CORREÇÃO: Só carregar municípios se estado não for vazio e não for "all"
     if (filters.estado && filters.estado !== "all") {
+      console.log('🏛️ ImoveisFilters - Carregando municípios para estado:', filters.estado);
       setLoadingMunicipios(true)
       fetchMunicipiosByEstado(filters.estado)
-        .then(setMunicipios)
+        .then(municipiosData => {
+          console.log('🏙️ ImoveisFilters - Municípios carregados:', municipiosData.length);
+          setMunicipios(municipiosData);
+        })
         .catch(error => {
-          console.error('Erro ao carregar municípios:', error)
+          console.error('❌ Erro ao carregar municípios:', error)
           setMunicipios([])
         })
         .finally(() => setLoadingMunicipios(false))
     } else {
+      console.log('🏛️ ImoveisFilters - Limpando municípios (estado vazio ou "all")');
       setMunicipios([])
     }
   }, [filters.estado])
 
   const estados = getEstadosOptions()
   const cidades = getMunicipiosOptions(municipios)
+
+  console.log('🏠 ImoveisFilters - Estado atual:', {
+    filters,
+    estadosDisponiveis: estados.length,
+    cidadesDisponiveis: cidades.length,
+    loadingMunicipios
+  });
 
   const origemOptions = [
     { value: "judicial", label: "Judicial" },
