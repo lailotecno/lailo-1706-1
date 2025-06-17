@@ -1,4 +1,5 @@
-import { Auction } from '../types/auction';
+import { Auction, SortOption, Category } from '../types/auction';
+import { normalizeVehicleType, normalizePropertyType } from '../utils/typeNormalization';
 
 export const mockAuctions: Auction[] = [
   {
@@ -116,3 +117,158 @@ export const mockAuctions: Auction[] = [
     format: "Online"
   }
 ];
+
+export function getAuctionsByCategory(
+  category: Category,
+  specificType: string | null,
+  filters: any,
+  sortOption: SortOption,
+  searchQuery: string
+): { auctions: Auction[], totalCount: number, newCount: number, siteCount: number } {
+  const now = new Date();
+  
+  // Filter auctions by category and active status (end_date >= now)
+  let filteredAuctions = mockAuctions.filter(auction => {
+    const endDate = new Date(auction.end_date);
+    return auction.type === category && endDate >= now;
+  });
+
+  // Apply specific type filter
+  if (specificType) {
+    filteredAuctions = filteredAuctions.filter(auction => {
+      if (category === 'property') {
+        return normalizePropertyType(auction.property_type || '') === normalizePropertyType(specificType);
+      } else {
+        return normalizeVehicleType(auction.vehicle_type || '') === normalizeVehicleType(specificType);
+      }
+    });
+  }
+
+  // Apply search query filter
+  if (searchQuery.trim()) {
+    const query = searchQuery.toLowerCase();
+    filteredAuctions = filteredAuctions.filter(auction => {
+      if (category === 'property') {
+        return (
+          auction.property_type?.toLowerCase().includes(query) ||
+          auction.property_address?.toLowerCase().includes(query) ||
+          auction.city?.toLowerCase().includes(query) ||
+          auction.state?.toLowerCase().includes(query)
+        );
+      } else {
+        return (
+          auction.brand?.toLowerCase().includes(query) ||
+          auction.model?.toLowerCase().includes(query) ||
+          auction.city?.toLowerCase().includes(query) ||
+          auction.state?.toLowerCase().includes(query)
+        );
+      }
+    });
+  }
+
+  // Apply filters
+  if (filters.format && filters.format !== 'all') {
+    filteredAuctions = filteredAuctions.filter(auction => auction.format === filters.format);
+  }
+
+  if (filters.origin && filters.origin.length > 0) {
+    filteredAuctions = filteredAuctions.filter(auction => 
+      filters.origin.includes(auction.origin)
+    );
+  }
+
+  if (filters.stage && filters.stage.length > 0) {
+    filteredAuctions = filteredAuctions.filter(auction => 
+      filters.stage.includes(auction.stage)
+    );
+  }
+
+  if (filters.state) {
+    filteredAuctions = filteredAuctions.filter(auction => auction.state === filters.state);
+  }
+
+  if (filters.city) {
+    filteredAuctions = filteredAuctions.filter(auction => auction.city === filters.city);
+  }
+
+  // Apply category-specific filters
+  if (category === 'property') {
+    if (filters.useful_area_m2 && (filters.useful_area_m2[0] > 0 || filters.useful_area_m2[1] < 1000)) {
+      filteredAuctions = filteredAuctions.filter(auction => {
+        const area = auction.useful_area_m2 || 0;
+        return area >= filters.useful_area_m2[0] && area <= filters.useful_area_m2[1];
+      });
+    }
+  } else if (category === 'vehicle') {
+    if (filters.brand) {
+      filteredAuctions = filteredAuctions.filter(auction => auction.brand === filters.brand);
+    }
+
+    if (filters.model) {
+      filteredAuctions = filteredAuctions.filter(auction => auction.model === filters.model);
+    }
+
+    if (filters.color) {
+      filteredAuctions = filteredAuctions.filter(auction => auction.color === filters.color);
+    }
+
+    if (filters.year && (filters.year[0] > 1990 || filters.year[1] < 2024)) {
+      filteredAuctions = filteredAuctions.filter(auction => {
+        const year = auction.year || 0;
+        return year >= filters.year[0] && year <= filters.year[1];
+      });
+    }
+  }
+
+  // Apply price filter
+  if (filters.initial_bid_value && (filters.initial_bid_value[0] > 0 || filters.initial_bid_value[1] < 1000000)) {
+    filteredAuctions = filteredAuctions.filter(auction => {
+      const price = auction.initial_bid_value || 0;
+      return price >= filters.initial_bid_value[0] && price <= filters.initial_bid_value[1];
+    });
+  }
+
+  // Apply sorting
+  filteredAuctions.sort((a, b) => {
+    switch (sortOption) {
+      case 'recent':
+        return new Date(b.updated).getTime() - new Date(a.updated).getTime();
+      case 'price-asc':
+        return (a.initial_bid_value || 0) - (b.initial_bid_value || 0);
+      case 'price-desc':
+        return (b.initial_bid_value || 0) - (a.initial_bid_value || 0);
+      case 'discount':
+        const discountA = a.appraised_value && a.initial_bid_value 
+          ? ((a.appraised_value - a.initial_bid_value) / a.appraised_value) * 100 
+          : 0;
+        const discountB = b.appraised_value && b.initial_bid_value 
+          ? ((b.appraised_value - b.initial_bid_value) / b.appraised_value) * 100 
+          : 0;
+        return discountB - discountA;
+      case 'ending-soon':
+        return new Date(a.end_date).getTime() - new Date(b.end_date).getTime();
+      default:
+        return 0;
+    }
+  });
+
+  // Calculate statistics
+  const totalCount = filteredAuctions.length;
+  
+  // Count new auctions (updated in last 24 hours)
+  const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+  const newCount = filteredAuctions.filter(auction => 
+    new Date(auction.updated) >= twentyFourHoursAgo
+  ).length;
+
+  // Count unique sites
+  const uniqueSites = new Set(filteredAuctions.map(auction => auction.website));
+  const siteCount = uniqueSites.size;
+
+  return {
+    auctions: filteredAuctions,
+    totalCount,
+    newCount,
+    siteCount
+  };
+}
