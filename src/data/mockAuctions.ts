@@ -368,6 +368,29 @@ export const mockAuctions: Auction[] = [
   }
 ];
 
+// ===== UTILITY FUNCTIONS =====
+
+/**
+ * Normaliza string para comparação (remove acentos, espaços extras, etc.)
+ */
+function normalizeString(str: string): string {
+  if (!str || typeof str !== 'string') return '';
+  
+  return str
+    .normalize('NFD') // Decompor caracteres acentuados
+    .replace(/[\u0300-\u036f]/g, '') // Remover acentos
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, ' '); // Normalizar espaços
+}
+
+/**
+ * Compara duas strings de forma robusta (case-insensitive, sem acentos)
+ */
+function compareStrings(str1: string, str2: string): boolean {
+  return normalizeString(str1) === normalizeString(str2);
+}
+
 export function getAuctionsByCategory(
   category: Category,
   type?: string,
@@ -554,10 +577,15 @@ export function getAuctionsByCategory(
         return false;
       }
 
-      // City filter
-      if (filters.city && filters.city !== "all" && auction.city !== filters.city) {
-        console.log(`❌ Auction ${auction._id} filtered out by city: ${auction.city} !== ${filters.city}`);
-        return false;
+      // City filter - 🔧 CORREÇÃO: Usar comparação robusta
+      if (filters.city && filters.city !== "all") {
+        const cityMatches = compareStrings(auction.city, filters.city);
+        if (!cityMatches) {
+          console.log(`❌ Auction ${auction._id} filtered out by city: "${auction.city}" !== "${filters.city}" (normalized: "${normalizeString(auction.city)}" vs "${normalizeString(filters.city)}")`);
+          return false;
+        } else {
+          console.log(`✅ Auction ${auction._id} matches city filter: "${auction.city}" === "${filters.city}"`);
+        }
       }
 
       // Property-specific filters
@@ -575,53 +603,29 @@ export function getAuctionsByCategory(
 
       // Vehicle-specific filters
       if (auction.type === 'vehicle') {
-        // Brand filter - CORREÇÃO: Comparação case-insensitive
+        // Brand filter - CORREÇÃO: Usar comparação robusta
         if (filters.brand && filters.brand !== "all") {
-          const filterBrand = filters.brand.toLowerCase();
-          const auctionBrand = (auction.brand || '').toLowerCase();
-          if (auctionBrand !== filterBrand) {
-            console.log(`❌ Auction ${auction._id} filtered out by brand: ${auction.brand} !== ${filters.brand}`);
+          const brandMatches = compareStrings(auction.brand || '', filters.brand);
+          if (!brandMatches) {
+            console.log(`❌ Auction ${auction._id} filtered out by brand: "${auction.brand}" !== "${filters.brand}"`);
             return false;
           }
         }
 
-        // Model filter - CORREÇÃO: Comparação case-insensitive
+        // Model filter - CORREÇÃO: Usar comparação robusta
         if (filters.model && filters.model !== "all") {
-          const filterModel = filters.model.toLowerCase();
-          const auctionModel = (auction.model || '').toLowerCase();
-          if (auctionModel !== filterModel) {
-            console.log(`❌ Auction ${auction._id} filtered out by model: ${auction.model} !== ${filters.model}`);
+          const modelMatches = compareStrings(auction.model || '', filters.model);
+          if (!modelMatches) {
+            console.log(`❌ Auction ${auction._id} filtered out by model: "${auction.model}" !== "${filters.model}"`);
             return false;
           }
         }
 
-        // Color filter - CORREÇÃO: Mapear valores e comparação case-insensitive
+        // Color filter - CORREÇÃO: Usar comparação robusta
         if (filters.color && filters.color !== "all") {
-          const colorMap: Record<string, string[]> = {
-            'amarelo': ['Amarelo'],
-            'azul': ['Azul'],
-            'bege': ['Bege'],
-            'branco': ['Branco'],
-            'bronze': ['Bronze'],
-            'cinza': ['Cinza'],
-            'dourado': ['Dourado'],
-            'grafite': ['Grafite'],
-            'laranja': ['Laranja'],
-            'marrom': ['Marrom'],
-            'prata': ['Prata'],
-            'preto': ['Preto'],
-            'rosa': ['Rosa'],
-            'roxo': ['Roxo'],
-            'verde': ['Verde'],
-            'vermelho': ['Vermelho'],
-            'vinho': ['Vinho']
-          };
-          
-          const allowedColors = colorMap[filters.color.toLowerCase()] || [filters.color];
-          const auctionColor = auction.color || '';
-          
-          if (!allowedColors.some(color => color.toLowerCase() === auctionColor.toLowerCase())) {
-            console.log(`❌ Auction ${auction._id} filtered out by color: ${auction.color} not in [${allowedColors.join(', ')}]`);
+          const colorMatches = compareStrings(auction.color || '', filters.color);
+          if (!colorMatches) {
+            console.log(`❌ Auction ${auction._id} filtered out by color: "${auction.color}" !== "${filters.color}"`);
             return false;
           }
         }
