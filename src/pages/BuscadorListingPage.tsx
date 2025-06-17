@@ -84,32 +84,37 @@ export const BuscadorListingPage: React.FC<BuscadorListingPageProps> = ({ catego
   const { auctions: filteredAndSortedAuctions, totalSites, newAuctions } = useMemo(() => {
     console.log('🔍 Buscando leilões:', { category, currentType, selectedSort, searchQuery });
     
-    // Convert our filter format to the expected format
-    const filters = category === 'imoveis' ? {
-      format: appliedImoveisFilters.formato || undefined,
-      origin: appliedImoveisFilters.origem.length > 0 ? appliedImoveisFilters.origem : undefined,
-      stage: appliedImoveisFilters.etapa.length > 0 ? appliedImoveisFilters.etapa : undefined,
-      state: appliedImoveisFilters.estado || undefined,
-      city: appliedImoveisFilters.cidade || undefined,
-      useful_area_m2: appliedImoveisFilters.area,
-      initial_bid_value: appliedImoveisFilters.valor
-    } : {
-      format: appliedVeiculosFilters.formato || undefined,
-      origin: appliedVeiculosFilters.origem.length > 0 ? appliedVeiculosFilters.origem : undefined,
-      stage: appliedVeiculosFilters.etapa.length > 0 ? appliedVeiculosFilters.etapa : undefined,
-      state: appliedVeiculosFilters.estado || undefined,
-      city: appliedVeiculosFilters.cidade || undefined,
-      brand: appliedVeiculosFilters.marca || undefined,
-      model: appliedVeiculosFilters.modelo || undefined,
-      color: appliedVeiculosFilters.cor || undefined,
-      year: appliedVeiculosFilters.ano,
-      initial_bid_value: appliedVeiculosFilters.preco
-    };
+    try {
+      // Convert our filter format to the expected format
+      const filters = category === 'imoveis' ? {
+        format: appliedImoveisFilters.formato || undefined,
+        origin: appliedImoveisFilters.origem.length > 0 ? appliedImoveisFilters.origem : undefined,
+        stage: appliedImoveisFilters.etapa.length > 0 ? appliedImoveisFilters.etapa : undefined,
+        state: appliedImoveisFilters.estado && appliedImoveisFilters.estado !== "all" ? appliedImoveisFilters.estado : undefined,
+        city: appliedImoveisFilters.cidade && appliedImoveisFilters.cidade !== "all" ? appliedImoveisFilters.cidade : undefined,
+        useful_area_m2: appliedImoveisFilters.area,
+        initial_bid_value: appliedImoveisFilters.valor
+      } : {
+        format: appliedVeiculosFilters.formato || undefined,
+        origin: appliedVeiculosFilters.origem.length > 0 ? appliedVeiculosFilters.origem : undefined,
+        stage: appliedVeiculosFilters.etapa.length > 0 ? appliedVeiculosFilters.etapa : undefined,
+        state: appliedVeiculosFilters.estado && appliedVeiculosFilters.estado !== "all" ? appliedVeiculosFilters.estado : undefined,
+        city: appliedVeiculosFilters.cidade && appliedVeiculosFilters.cidade !== "all" ? appliedVeiculosFilters.cidade : undefined,
+        brand: appliedVeiculosFilters.marca && appliedVeiculosFilters.marca !== "all" ? appliedVeiculosFilters.marca : undefined,
+        model: appliedVeiculosFilters.modelo && appliedVeiculosFilters.modelo !== "all" ? appliedVeiculosFilters.modelo : undefined,
+        color: appliedVeiculosFilters.cor && appliedVeiculosFilters.cor !== "all" ? appliedVeiculosFilters.cor : undefined,
+        year: appliedVeiculosFilters.ano,
+        initial_bid_value: appliedVeiculosFilters.preco
+      };
 
-    const result = getAuctionsByCategory(category, currentType, filters, selectedSort, searchQuery);
-    console.log('📊 Resultado da busca:', result);
-    
-    return result;
+      const result = getAuctionsByCategory(category, currentType, filters, selectedSort, searchQuery);
+      console.log('📊 Resultado da busca:', result);
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Erro ao buscar leilões:', error);
+      return { auctions: [], totalSites: 0, newAuctions: 0 };
+    }
   }, [category, currentType, appliedImoveisFilters, appliedVeiculosFilters, selectedSort, searchQuery]);
   
   // Calculate pagination
