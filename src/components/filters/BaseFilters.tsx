@@ -103,8 +103,8 @@ export const BaseFilters: React.FC<BaseFiltersProps> = React.memo(({
 
   return (
     <div className="space-y-6">
-      {/* Localização */}
-      <div>
+      {/* Localização - CORREÇÃO: Adicionada margem superior */}
+      <div className="mt-4">
         <label className="block text-sm font-medium text-gray-700 mb-3">
           Localização
         </label>
