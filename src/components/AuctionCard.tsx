@@ -4,6 +4,7 @@ import { AuctionCardHorizontalBase } from './cards/AuctionCardHorizontalBase';
 import { AuctionCardHorizontalVehicle } from './cards/AuctionCardHorizontalVehicle';
 import { AuctionCardVerticalBase } from './cards/AuctionCardVerticalBase';
 import { AuctionCardVerticalVehicle } from './cards/AuctionCardVerticalVehicle';
+import { DateUtils } from '../utils/dateUtils';
 
 interface AuctionCardProps {
   auction: Auction;
@@ -39,30 +40,9 @@ export const AuctionCard: React.FC<AuctionCardProps> = React.memo(({ auction, vi
     }).format(amount);
   }, []);
 
-  // 🚀 OTIMIZAÇÃO: Memoizar formatação de tempo
+  // 🚀 OTIMIZAÇÃO: Memoizar formatação de tempo usando DateUtils
   const formatTimeRemaining = useCallback((endDate: string) => {
-    if (!endDate) return '0h';
-    
-    try {
-      const now = new Date();
-      const end = new Date(endDate);
-      
-      if (isNaN(end.getTime())) {
-        return '0h';
-      }
-      
-      const diff = end.getTime() - now.getTime();
-      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      
-      if (days > 0) {
-        return `${days}d ${hours}h`;
-      }
-      return `${hours}h`;
-    } catch (error) {
-      console.warn('⚠️ Erro ao formatar data:', endDate, error);
-      return '0h';
-    }
+    return DateUtils.formatTimeRemaining(endDate);
   }, []);
 
   // 🚀 OTIMIZAÇÃO: Memoizar cálculo de desconto
@@ -76,24 +56,9 @@ export const AuctionCard: React.FC<AuctionCardProps> = React.memo(({ auction, vi
     return discountValue > 0 ? Math.round(discountValue) : null;
   }, [auction.appraised_value, auction.initial_bid_value]);
 
-  // 🚀 OTIMIZAÇÃO: Memoizar verificação de "novo"
+  // 🚀 OTIMIZAÇÃO: Memoizar verificação de "novo" usando DateUtils
   const isNew = useMemo(() => {
-    if (!auction.data_scraped) return false;
-    
-    try {
-      const now = new Date();
-      const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-      const scrapedDate = new Date(auction.data_scraped);
-      
-      if (isNaN(scrapedDate.getTime())) {
-        return false;
-      }
-      
-      return scrapedDate >= twentyFourHoursAgo;
-    } catch (error) {
-      console.warn('⚠️ Erro ao verificar se é novo:', auction.data_scraped, error);
-      return false;
-    }
+    return DateUtils.isWithinLast24Hours(auction.data_scraped);
   }, [auction.data_scraped]);
 
   // 🚀 OTIMIZAÇÃO: Memoizar handlers

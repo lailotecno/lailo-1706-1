@@ -1,4 +1,5 @@
 import { Auction, Category, SortOption, Filters } from '../types/auction';
+import { DateUtils } from '../utils/dateUtils';
 
 export const mockAuctions: Auction[] = [
   // IMÓVEIS - Apartamentos
@@ -406,10 +407,10 @@ export function getAuctionsByCategory(
     return { auctions: [], totalSites: 0, newAuctions: 0 };
   }
   
-  const now = new Date();
-  console.log('⏰ Data atual:', now.toISOString());
+  const now = DateUtils.getNow();
+  console.log('⏰ Data atual (Brasília):', DateUtils.format(now, { includeTime: true }));
   
-  // Filter by category and active auctions (end_date >= now)
+  // Filter by category and active auctions (end_date > now)
   let filteredAuctions = mockAuctions.filter(auction => {
     // 🛡️ CORREÇÃO: Verificar se auction é válido
     if (!auction || typeof auction !== 'object' || !auction._id) {
@@ -417,20 +418,20 @@ export function getAuctionsByCategory(
       return false;
     }
     
-    const endDate = new Date(auction.end_date);
+    // 🔧 CORREÇÃO: Usar DateUtils para parsing e comparação de datas
+    const endDate = DateUtils.parse(auction.end_date);
     
-    // CORREÇÃO: Verificar se a data é válida primeiro
-    if (isNaN(endDate.getTime())) {
+    if (!endDate) {
       console.log(`❌ Auction ${auction._id}: Data inválida - ${auction.end_date}`);
       return false;
     }
     
-    const isActive = endDate > now; // CORREÇÃO: Usar > em vez de >=
+    const isActive = DateUtils.isFuture(endDate);
     const matchesCategory = category === 'imoveis' ? auction.type === 'property' : auction.type === 'vehicle';
     
     console.log(`Auction ${auction._id}:`, { 
-      endDate: endDate.toISOString(), 
-      now: now.toISOString(),
+      endDate: DateUtils.format(endDate, { includeTime: true }), 
+      now: DateUtils.format(now, { includeTime: true }),
       isActive, 
       matchesCategory, 
       type: auction.type,
@@ -703,9 +704,10 @@ export function getAuctionsByCategory(
         
         switch (sort) {
           case 'newest':
-            const dateA = new Date(a.updated);
-            const dateB = new Date(b.updated);
-            if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) return 0;
+            // 🔧 CORREÇÃO: Usar DateUtils para comparação de datas
+            const dateA = DateUtils.parse(a.updated);
+            const dateB = DateUtils.parse(b.updated);
+            if (!dateA || !dateB) return 0;
             return dateB.getTime() - dateA.getTime();
           case 'lowest-bid':
             return (a.initial_bid_value || 0) - (b.initial_bid_value || 0);
@@ -716,9 +718,10 @@ export function getAuctionsByCategory(
             const discountB = b.appraised_value ? ((b.appraised_value - b.initial_bid_value) / b.appraised_value) * 100 : 0;
             return discountB - discountA;
           case 'nearest':
-            const endA = new Date(a.end_date);
-            const endB = new Date(b.end_date);
-            if (isNaN(endA.getTime()) || isNaN(endB.getTime())) return 0;
+            // 🔧 CORREÇÃO: Usar DateUtils para comparação de datas
+            const endA = DateUtils.parse(a.end_date);
+            const endB = DateUtils.parse(b.end_date);
+            if (!endA || !endB) return 0;
             return endA.getTime() - endB.getTime();
           default:
             return 0;
@@ -731,11 +734,10 @@ export function getAuctionsByCategory(
 
   // Calculate statistics
   try {
-    const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    // 🔧 CORREÇÃO: Usar DateUtils para cálculo de "novos hoje"
     const newAuctions = filteredAuctions.filter(auction => {
       if (!auction || !auction.data_scraped) return false;
-      const scrapedDate = new Date(auction.data_scraped);
-      return !isNaN(scrapedDate.getTime()) && scrapedDate >= twentyFourHoursAgo;
+      return DateUtils.isWithinLast24Hours(auction.data_scraped);
     }).length;
 
     const uniqueSites = new Set(filteredAuctions.map(auction => auction.website).filter(Boolean));
