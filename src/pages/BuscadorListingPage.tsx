@@ -81,7 +81,7 @@ export const BuscadorListingPage: React.FC<BuscadorListingPageProps> = ({ catego
   const currentType = getCurrentType();
   
   // Get filtered and sorted auctions using APPLIED filters
-  const filteredAndSortedAuctions = useMemo(() => {
+  const { auctions: filteredAndSortedAuctions, totalSites, newAuctions } = useMemo(() => {
     const filters = category === 'imoveis' ? appliedImoveisFilters : appliedVeiculosFilters;
     return getAuctionsByCategory(category, currentType, filters, selectedSort, searchQuery);
   }, [category, currentType, appliedImoveisFilters, appliedVeiculosFilters, selectedSort, searchQuery]);
@@ -127,13 +127,12 @@ export const BuscadorListingPage: React.FC<BuscadorListingPageProps> = ({ catego
   
   const getStatusText = () => {
     const count = filteredAndSortedAuctions.length;
-    const newCount = filteredAndSortedAuctions.filter(auction => auction.isNew).length;
     
     return (
       <>
-        <span className="font-medium">Encontramos</span> <span className="font-semibold text-blue-600">{count}</span> <span className="font-medium">leilões em</span> <span className="font-semibold text-blue-600">8</span> <span className="font-medium">sites</span>
-        {newCount > 0 && (
-          <> <span className="font-medium">•</span> <span className="font-semibold text-blue-600">{newCount}</span> <span className="font-medium">novos hoje</span></>
+        <span className="font-medium">Encontramos</span> <span className="font-semibold text-blue-600">{count}</span> <span className="font-medium">leilões em</span> <span className="font-semibold text-blue-600">{totalSites}</span> <span className="font-medium">sites</span>
+        {newAuctions > 0 && (
+          <> <span className="font-medium">•</span> <span className="font-semibold text-blue-600">{newAuctions}</span> <span className="font-medium">novos hoje</span></>
         )}
       </>
     );
