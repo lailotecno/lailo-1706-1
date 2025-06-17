@@ -1,14 +1,19 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Auction } from '../types/auction';
+import { Auction, PaginationData, UsePaginationParams } from '../types/auction';
 
-interface UsePaginationProps {
-  auctions: Auction[];
-  itemsPerPage: number;
-  dependencies: any[]; // Dependencies that should reset pagination
+interface UsePaginationReturn {
+  currentPage: number;
+  totalPages: number;
+  currentAuctions: Auction[];
+  handlePageChange: (page: number) => void;
 }
 
-export const usePagination = ({ auctions, itemsPerPage, dependencies }: UsePaginationProps) => {
-  const [currentPage, setCurrentPage] = useState(1);
+export const usePagination = ({ 
+  auctions, 
+  itemsPerPage, 
+  dependencies 
+}: UsePaginationParams): UsePaginationReturn => {
+  const [currentPage, setCurrentPage] = useState<number>(1);
   
   // Reset page when dependencies change
   useEffect(() => {
@@ -16,7 +21,7 @@ export const usePagination = ({ auctions, itemsPerPage, dependencies }: UsePagin
   }, dependencies);
   
   // 🚀 OTIMIZAÇÃO: Memoizar cálculos de paginação
-  const paginationData = useMemo(() => {
+  const paginationData = useMemo((): Omit<PaginationData, 'currentPage'> => {
     const totalPages = Math.ceil(auctions.length / itemsPerPage);
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
@@ -24,11 +29,12 @@ export const usePagination = ({ auctions, itemsPerPage, dependencies }: UsePagin
     
     return {
       totalPages,
-      currentAuctions
+      currentAuctions,
+      totalItems: auctions.length
     };
   }, [auctions, itemsPerPage, currentPage]);
   
-  const handlePageChange = (page: number) => {
+  const handlePageChange = (page: number): void => {
     setCurrentPage(page);
     // Scroll to top when page changes
     window.scrollTo({ top: 0, behavior: 'smooth' });

@@ -4,6 +4,7 @@ import { RangeSlider } from "./RangeSlider"
 import { BaseFilters } from "./BaseFilters"
 import { useAppContext } from "../../contexts/AppContext"
 import { FILTER_CONFIG, LABEL_CONFIG } from "../../config/constants"
+import { FilterOption } from "../../types/auction"
 
 interface VeiculosFiltersProps {
   currentVehicleType?: string;
@@ -17,7 +18,7 @@ export const VeiculosFilters: React.FC<VeiculosFiltersProps> = React.memo(({
   const filters = state.stagedFilters.veiculos;
 
   // 🚀 OTIMIZAÇÃO: Memoizar opções que não mudam
-  const marcas = React.useMemo(() => [
+  const marcas = React.useMemo((): FilterOption[] => [
     { value: "all", label: "Todas as marcas" },
     { value: "toyota", label: "Toyota" },
     { value: "honda", label: "Honda" },
@@ -26,8 +27,8 @@ export const VeiculosFilters: React.FC<VeiculosFiltersProps> = React.memo(({
     { value: "chevrolet", label: "Chevrolet" },
   ], []);
 
-  const getModelos = React.useCallback((marca: string) => {
-    const modelosPorMarca: Record<string, Array<{ value: string; label: string }>> = {
+  const getModelos = React.useCallback((marca: string): FilterOption[] => {
+    const modelosPorMarca: Record<string, FilterOption[]> = {
       toyota: [
         { value: "all", label: "Todos os modelos" },
         { value: "corolla", label: "Corolla" },
@@ -45,7 +46,7 @@ export const VeiculosFilters: React.FC<VeiculosFiltersProps> = React.memo(({
     return modelosPorMarca[marca] || [{ value: "all", label: "Todos os modelos" }]
   }, []);
 
-  const cores = React.useMemo(() => [
+  const cores = React.useMemo((): FilterOption[] => [
     { value: "all", label: "Todas as cores" },
     { value: "amarelo", label: "Amarelo" },
     { value: "azul", label: "Azul" },
@@ -67,52 +68,52 @@ export const VeiculosFilters: React.FC<VeiculosFiltersProps> = React.memo(({
   ], []);
   
   // 🚀 OTIMIZAÇÃO: Memoizar estado derivado
-  const shouldShowBrandModelFilters = React.useMemo(() => 
+  const shouldShowBrandModelFilters = React.useMemo((): boolean => 
     currentVehicleType !== 'todos' && currentVehicleType !== 'nao-informado',
     [currentVehicleType]
   );
 
   // 🚀 OTIMIZAÇÃO: Memoizar handlers
-  const handleEstadoChange = React.useCallback((value: string) => {
+  const handleEstadoChange = React.useCallback((value: string): void => {
     actions.setStagedVeiculosFilters({ estado: value });
   }, [actions]);
 
-  const handleCidadeChange = React.useCallback((value: string) => {
+  const handleCidadeChange = React.useCallback((value: string): void => {
     actions.setStagedVeiculosFilters({ cidade: value });
   }, [actions]);
 
-  const handleFormatoChange = React.useCallback((value: string) => {
+  const handleFormatoChange = React.useCallback((value: string): void => {
     actions.setStagedVeiculosFilters({ formato: value });
   }, [actions]);
 
-  const handleOrigemChange = React.useCallback((value: string[]) => {
+  const handleOrigemChange = React.useCallback((value: string[]): void => {
     actions.setStagedVeiculosFilters({ origem: value });
   }, [actions]);
 
-  const handleEtapaChange = React.useCallback((value: string[]) => {
+  const handleEtapaChange = React.useCallback((value: string[]): void => {
     actions.setStagedVeiculosFilters({ etapa: value });
   }, [actions]);
 
-  const handleMarcaChange = React.useCallback((value: string) => {
+  const handleMarcaChange = React.useCallback((value: string): void => {
     actions.setStagedVeiculosFilters({ 
       marca: value,
       modelo: "" // Reset modelo when marca changes
     });
   }, [actions]);
 
-  const handleModeloChange = React.useCallback((value: string) => {
+  const handleModeloChange = React.useCallback((value: string): void => {
     actions.setStagedVeiculosFilters({ modelo: value });
   }, [actions]);
 
-  const handleCorChange = React.useCallback((value: string) => {
+  const handleCorChange = React.useCallback((value: string): void => {
     actions.setStagedVeiculosFilters({ cor: value });
   }, [actions]);
 
-  const handleAnoChange = React.useCallback((value: [number, number]) => {
+  const handleAnoChange = React.useCallback((value: [number, number]): void => {
     actions.setStagedVeiculosFilters({ ano: value });
   }, [actions]);
 
-  const handlePrecoChange = React.useCallback((value: [number, number]) => {
+  const handlePrecoChange = React.useCallback((value: [number, number]): void => {
     actions.setStagedVeiculosFilters({ preco: value });
   }, [actions]);
 

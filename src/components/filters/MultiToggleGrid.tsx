@@ -1,8 +1,9 @@
 import * as React from "react"
 import { cn } from "../../lib/utils"
+import { FilterOption } from "../../types/auction"
 
 interface MultiToggleGridProps {
-  options: Array<{ value: string; label: string }>
+  options: FilterOption[]
   value: string[]
   onValueChange?: (value: string[]) => void
   className?: string
@@ -18,7 +19,7 @@ export const MultiToggleGrid: React.FC<MultiToggleGridProps> = React.memo(({
   disabled = false
 }) => {
   // 🚀 OTIMIZAÇÃO: Memoizar handler para evitar recriações
-  const handleToggle = React.useCallback((optionValue: string) => {
+  const handleToggle = React.useCallback((optionValue: string): void => {
     if (disabled || !onValueChange) return;
     
     const currentValues = Array.isArray(value) ? value : [];

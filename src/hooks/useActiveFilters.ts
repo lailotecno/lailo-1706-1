@@ -1,12 +1,7 @@
 import { useMemo } from 'react';
-import { Category } from '../types/auction';
+import { Category, UseActiveFiltersParams } from '../types/auction';
 
-interface UseActiveFiltersProps {
-  category: Category;
-  appliedFilters: any;
-}
-
-export const useActiveFilters = ({ category, appliedFilters }: UseActiveFiltersProps) => {
+export const useActiveFilters = ({ category, appliedFilters }: UseActiveFiltersParams): boolean => {
   // 🚀 OTIMIZAÇÃO: useMemo com dependências estáveis
   return useMemo(() => {
     const filters = category === 'imoveis' ? appliedFilters.imoveis : appliedFilters.veiculos;

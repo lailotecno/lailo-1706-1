@@ -1,51 +1,17 @@
 import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
-import { ViewMode, SortOption } from '../types/auction';
+import { 
+  ViewMode, 
+  SortOption, 
+  ImoveisFilters, 
+  VeiculosFilters, 
+  UIState,
+  AppContextState,
+  AppContextActions,
+  StorageData,
+  isValidViewMode,
+  isValidSortOption
+} from '../types/auction';
 import { FILTER_CONFIG, STORAGE_CONFIG } from '../config/constants';
-
-// ===== TYPES =====
-interface ImoveisFilters {
-  estado: string;
-  cidade: string;
-  area: [number, number];
-  valor: [number, number];
-  formato: string;
-  origem: string[];
-  etapa: string[];
-}
-
-interface VeiculosFilters {
-  estado: string;
-  cidade: string;
-  marca: string;
-  modelo: string;
-  cor: string;
-  ano: [number, number];
-  preco: [number, number];
-  formato: string;
-  origem: string[];
-  etapa: string[];
-}
-
-interface UIState {
-  sidebarOpen: boolean;
-  filtersOpen: boolean;
-}
-
-interface AppState {
-  viewMode: ViewMode;
-  // CORREÇÃO: Separar filtros staged (editando) dos applied (aplicados)
-  stagedFilters: {
-    imoveis: ImoveisFilters;
-    veiculos: VeiculosFilters;
-  };
-  appliedFilters: {
-    imoveis: ImoveisFilters;
-    veiculos: VeiculosFilters;
-  };
-  sortOption: SortOption;
-  searchQuery: string;
-  ui: UIState;
-}
 
 // ===== DEFAULT VALUES =====
 const defaultImoveisFilters: ImoveisFilters = {
@@ -76,7 +42,7 @@ const defaultUIState: UIState = {
   filtersOpen: false
 };
 
-const defaultState: AppState = {
+const defaultState: AppContextState = {
   viewMode: 'horizontal',
   stagedFilters: {
     imoveis: defaultImoveisFilters,
@@ -103,11 +69,11 @@ type AppAction =
   | { type: 'SET_SORT_OPTION'; payload: SortOption }
   | { type: 'SET_SEARCH_QUERY'; payload: string }
   | { type: 'SET_UI_STATE'; payload: Partial<UIState> }
-  | { type: 'LOAD_FROM_STORAGE'; payload: Partial<AppState> }
+  | { type: 'LOAD_FROM_STORAGE'; payload: Partial<AppContextState> }
   | { type: 'RESET_ALL' };
 
 // ===== REDUCER =====
-function appReducer(state: AppState, action: AppAction): AppState {
+function appReducer(state: AppContextState, action: AppAction): AppContextState {
   switch (action.type) {
     case 'SET_VIEW_MODE':
       return {
@@ -220,29 +186,17 @@ function appReducer(state: AppState, action: AppAction): AppState {
 
 // ===== CONTEXT =====
 interface AppContextType {
-  state: AppState;
-  actions: {
-    setViewMode: (mode: ViewMode) => void;
-    setStagedImoveisFilters: (filters: Partial<ImoveisFilters>) => void;
-    setStagedVeiculosFilters: (filters: Partial<VeiculosFilters>) => void;
-    applyImoveisFilters: () => void;
-    applyVeiculosFilters: () => void;
-    clearImoveisFilters: () => void;
-    clearVeiculosFilters: () => void;
-    setSortOption: (sort: SortOption) => void;
-    setSearchQuery: (query: string) => void;
-    setUIState: (ui: Partial<UIState>) => void;
-    resetAll: () => void;
-  };
+  state: AppContextState;
+  actions: AppContextActions;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 // ===== STORAGE UTILITIES =====
-const saveToStorage = (state: AppState) => {
+const saveToStorage = (state: AppContextState): void => {
   try {
     // Salvar apenas dados relevantes (não UI state temporário)
-    const dataToSave = {
+    const dataToSave: StorageData = {
       viewMode: state.viewMode,
       appliedFilters: state.appliedFilters, // Salvar apenas os filtros aplicados
       sortOption: state.sortOption,
@@ -257,51 +211,56 @@ const saveToStorage = (state: AppState) => {
   }
 };
 
-const loadFromStorage = (): Partial<AppState> => {
+const loadFromStorage = (): Partial<AppContextState> => {
   try {
     const saved = localStorage.getItem(STORAGE_CONFIG.KEYS.USER_PREFERENCES);
     if (!saved) {
       return {};
     }
     
-    const parsed = JSON.parse(saved);
+    const parsed: unknown = JSON.parse(saved);
     
     // Validar e sanitizar dados carregados
-    const validatedState: Partial<AppState> = {};
+    const validatedState: Partial<AppContextState> = {};
     
-    // Validar viewMode
-    if (parsed.viewMode && ['horizontal', 'vertical'].includes(parsed.viewMode)) {
-      validatedState.viewMode = parsed.viewMode;
-    }
-    
-    // Validar sortOption
-    if (parsed.sortOption && ['newest', 'lowest-bid', 'highest-bid', 'highest-discount', 'nearest'].includes(parsed.sortOption)) {
-      validatedState.sortOption = parsed.sortOption;
-    }
-    
-    // Validar appliedFilters
-    if (parsed.appliedFilters && typeof parsed.appliedFilters === 'object') {
-      validatedState.appliedFilters = {};
-      validatedState.stagedFilters = {}; // Inicializar staged com os mesmos valores
+    if (parsed && typeof parsed === 'object') {
+      const data = parsed as Record<string, unknown>;
       
-      // Validar filtros de imóveis
-      if (parsed.appliedFilters.imoveis && typeof parsed.appliedFilters.imoveis === 'object') {
-        const imoveisFilters = {
-          ...defaultImoveisFilters,
-          ...parsed.appliedFilters.imoveis
-        };
-        validatedState.appliedFilters.imoveis = imoveisFilters;
-        validatedState.stagedFilters.imoveis = imoveisFilters; // Staged começa igual ao applied
+      // Validar viewMode
+      if (isValidViewMode(data.viewMode)) {
+        validatedState.viewMode = data.viewMode;
       }
       
-      // Validar filtros de veículos
-      if (parsed.appliedFilters.veiculos && typeof parsed.appliedFilters.veiculos === 'object') {
-        const veiculosFilters = {
-          ...defaultVeiculosFilters,
-          ...parsed.appliedFilters.veiculos
-        };
-        validatedState.appliedFilters.veiculos = veiculosFilters;
-        validatedState.stagedFilters.veiculos = veiculosFilters; // Staged começa igual ao applied
+      // Validar sortOption
+      if (isValidSortOption(data.sortOption)) {
+        validatedState.sortOption = data.sortOption;
+      }
+      
+      // Validar appliedFilters
+      if (data.appliedFilters && typeof data.appliedFilters === 'object') {
+        const filters = data.appliedFilters as Record<string, unknown>;
+        validatedState.appliedFilters = {};
+        validatedState.stagedFilters = {}; // Inicializar staged com os mesmos valores
+        
+        // Validar filtros de imóveis
+        if (filters.imoveis && typeof filters.imoveis === 'object') {
+          const imoveisFilters: ImoveisFilters = {
+            ...defaultImoveisFilters,
+            ...(filters.imoveis as Partial<ImoveisFilters>)
+          };
+          validatedState.appliedFilters.imoveis = imoveisFilters;
+          validatedState.stagedFilters.imoveis = imoveisFilters; // Staged começa igual ao applied
+        }
+        
+        // Validar filtros de veículos
+        if (filters.veiculos && typeof filters.veiculos === 'object') {
+          const veiculosFilters: VeiculosFilters = {
+            ...defaultVeiculosFilters,
+            ...(filters.veiculos as Partial<VeiculosFilters>)
+          };
+          validatedState.appliedFilters.veiculos = veiculosFilters;
+          validatedState.stagedFilters.veiculos = veiculosFilters; // Staged começa igual ao applied
+        }
       }
     }
     
@@ -338,7 +297,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   }, [state]);
 
   // Actions
-  const actions = {
+  const actions: AppContextActions = {
     setViewMode: (mode: ViewMode) => {
       dispatch({ type: 'SET_VIEW_MODE', payload: mode });
     },
@@ -408,4 +367,4 @@ export const useAppContext = (): AppContextType => {
 };
 
 // ===== EXPORT TYPES =====
-export type { AppState, ImoveisFilters, VeiculosFilters, UIState };
+export type { AppContextState as AppState, ImoveisFilters, VeiculosFilters, UIState };

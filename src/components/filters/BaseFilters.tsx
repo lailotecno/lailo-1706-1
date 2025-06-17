@@ -2,7 +2,8 @@ import * as React from "react"
 import { ComboBoxSearch } from "./ComboBoxSearch"
 import { FormatToggle } from "./FormatToggle"
 import { MultiToggleGrid } from "./MultiToggleGrid"
-import { getEstadosOptions, getMunicipiosOptions, fetchMunicipiosByEstado, Municipio } from "../../utils/ibgeApi"
+import { getEstadosOptions, getMunicipiosOptions, fetchMunicipiosByEstado } from "../../utils/ibgeApi"
+import { IBGEMunicipio, FilterOption } from "../../types/auction"
 
 interface BaseFiltersProps {
   // Dados dos filtros
@@ -37,18 +38,18 @@ export const BaseFilters: React.FC<BaseFiltersProps> = React.memo(({
   onEtapaChange,
   children
 }) => {
-  const [municipios, setMunicipios] = React.useState<Municipio[]>([])
-  const [loadingMunicipios, setLoadingMunicipios] = React.useState(false)
+  const [municipios, setMunicipios] = React.useState<IBGEMunicipio[]>([])
+  const [loadingMunicipios, setLoadingMunicipios] = React.useState<boolean>(false)
 
   // Carregar municípios quando o estado mudar
   React.useEffect(() => {
     if (estado && estado !== "all") {
       setLoadingMunicipios(true)
       fetchMunicipiosByEstado(estado)
-        .then(municipiosData => {
+        .then((municipiosData: IBGEMunicipio[]) => {
           setMunicipios(municipiosData);
         })
-        .catch(error => {
+        .catch((error: unknown) => {
           console.error('Erro ao carregar municípios:', error)
           setMunicipios([])
         })
@@ -59,17 +60,17 @@ export const BaseFilters: React.FC<BaseFiltersProps> = React.memo(({
   }, [estado])
 
   // 🚀 OTIMIZAÇÃO: Memoizar opções que não mudam
-  const estados = React.useMemo(() => getEstadosOptions(), []);
-  const cidades = React.useMemo(() => getMunicipiosOptions(municipios), [municipios]);
+  const estados = React.useMemo((): FilterOption[] => getEstadosOptions(), []);
+  const cidades = React.useMemo((): FilterOption[] => getMunicipiosOptions(municipios), [municipios]);
 
-  const origemOptions = React.useMemo(() => [
+  const origemOptions = React.useMemo((): FilterOption[] => [
     { value: "judicial", label: "Judicial" },
     { value: "extrajudicial", label: "Extrajudicial" },
     { value: "particular", label: "Particular" },
     { value: "publico", label: "Público" }
   ], []);
 
-  const etapaOptions = React.useMemo(() => [
+  const etapaOptions = React.useMemo((): FilterOption[] => [
     { value: "praca-unica", label: "Praça única" },
     { value: "primeira", label: "1ª Praça" },
     { value: "segunda", label: "2ª Praça" },
@@ -77,15 +78,15 @@ export const BaseFilters: React.FC<BaseFiltersProps> = React.memo(({
   ], []);
 
   // 🚀 OTIMIZAÇÃO: Memoizar estado derivado
-  const isVendaDireta = React.useMemo(() => formato === "venda-direta", [formato]);
+  const isVendaDireta = React.useMemo((): boolean => formato === "venda-direta", [formato]);
 
   // 🚀 OTIMIZAÇÃO: Memoizar handlers
-  const handleEstadoChange = React.useCallback((value: string) => {
+  const handleEstadoChange = React.useCallback((value: string): void => {
     onEstadoChange(value)
     onCidadeChange("") // Reset cidade when estado changes
   }, [onEstadoChange, onCidadeChange]);
 
-  const handleCidadeChange = React.useCallback((value: string) => {
+  const handleCidadeChange = React.useCallback((value: string): void => {
     onCidadeChange(value)
   }, [onCidadeChange]);
 

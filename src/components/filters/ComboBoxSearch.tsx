@@ -15,9 +15,10 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "../ui/popover"
+import { FilterOption } from "../../types/auction"
 
 interface ComboBoxSearchProps {
-  options: Array<{ value: string; label: string }>
+  options: FilterOption[]
   value?: string
   onValueChange?: (value: string) => void
   placeholder?: string
@@ -35,16 +36,16 @@ export const ComboBoxSearch: React.FC<ComboBoxSearchProps> = ({
   disabled = false,
   className
 }) => {
-  const [open, setOpen] = React.useState(false)
+  const [open, setOpen] = React.useState<boolean>(false)
 
   // Find the selected option based on the current value
-  const selectedOption = React.useMemo(() => {
+  const selectedOption = React.useMemo((): FilterOption | null => {
     if (!value) {
       return null
     }
     
     // CORREÇÃO: Buscar a opção correspondente com comparação mais robusta
-    const found = options.find((option) => {
+    const found = options.find((option): boolean => {
       // Comparação exata primeiro
       if (option.value === value) return true;
       
@@ -60,7 +61,7 @@ export const ComboBoxSearch: React.FC<ComboBoxSearchProps> = ({
     return found || null
   }, [options, value])
 
-  const handleSelect = (selectedValue: string) => {
+  const handleSelect = (selectedValue: string): void => {
     // CORREÇÃO: Converter para maiúsculas se for um estado (sigla de 2 caracteres)
     // Isso garante consistência com os valores esperados nas opções
     let normalizedValue = selectedValue

@@ -1,14 +1,13 @@
 import { useMemo } from 'react';
 import { getAuctionsByCategory } from '../data/mockAuctions';
-import { Category, SortOption, Filters } from '../types/auction';
-
-interface UseAuctionDataProps {
-  category: Category;
-  currentType: string;
-  appliedFilters: any;
-  sortOption: SortOption;
-  searchQuery: string;
-}
+import { 
+  Category, 
+  SortOption, 
+  Filters, 
+  AuctionSearchResult,
+  UseAuctionDataParams,
+  AppContextState
+} from '../types/auction';
 
 export const useAuctionData = ({
   category,
@@ -16,7 +15,7 @@ export const useAuctionData = ({
   appliedFilters,
   sortOption,
   searchQuery
-}: UseAuctionDataProps) => {
+}: UseAuctionDataParams): AuctionSearchResult => {
   // 🚀 OTIMIZAÇÃO: useMemo com dependências específicas e estáveis
   return useMemo(() => {
     try {
