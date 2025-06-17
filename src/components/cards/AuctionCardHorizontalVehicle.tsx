@@ -43,12 +43,16 @@ export function AuctionCardHorizontalVehicle({
   return (
     <div className="group w-full bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-lg hover:border-gray-200 transition-all duration-300 p-3 md:p-4 cursor-pointer">
       <div className="flex gap-3 md:gap-4 mb-3">
-        <div className="relative h-[70px] md:h-[76px] w-20 md:w-24 rounded-xl overflow-hidden flex-shrink-0 bg-gray-100">
-          <img
-            src={imageUrl}
-            alt={`${brand} ${model}`}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-          />
+        {/* CORREÇÃO LAYOUT SHIFT: Container com aspect-ratio fixo */}
+        <div className="relative w-20 md:w-24 rounded-xl overflow-hidden flex-shrink-0 bg-gray-100">
+          <div className="aspect-[4/3] w-full">
+            <img
+              src={imageUrl}
+              alt={`${brand} ${model}`}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              loading="lazy"
+            />
+          </div>
           {/* Badge "Novo" sempre presente no DOM, mas controlado por visibilidade */}
           <div className={`absolute top-1.5 left-1.5 md:top-2 md:left-2 bg-gradient-to-r from-yellow-400 to-orange-400 text-white text-[10px] font-bold uppercase px-1.5 py-0.5 md:px-2 md:py-0.5 rounded-md shadow-sm transition-opacity duration-200 ${
             isNew ? 'opacity-100' : 'opacity-0 pointer-events-none'
