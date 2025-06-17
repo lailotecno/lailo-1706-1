@@ -3,13 +3,43 @@ import { RangeSlider } from "./RangeSlider"
 import { BaseFilters } from "./BaseFilters"
 import { useAppContext } from "../../contexts/AppContext"
 
-export const ImoveisFilters: React.FC = () => {
+// 🚀 OTIMIZAÇÃO: React.memo para evitar re-renderizações desnecessárias
+export const ImoveisFilters: React.FC = React.memo(() => {
   const { state, actions } = useAppContext();
   const filters = state.stagedFilters.imoveis;
   
   console.log('🏠 ImoveisFilters - Estado atual:', {
     filters
   });
+
+  // 🚀 OTIMIZAÇÃO: Memoizar handlers
+  const handleEstadoChange = React.useCallback((value: string) => {
+    actions.setStagedImoveisFilters({ estado: value });
+  }, [actions]);
+
+  const handleCidadeChange = React.useCallback((value: string) => {
+    actions.setStagedImoveisFilters({ cidade: value });
+  }, [actions]);
+
+  const handleFormatoChange = React.useCallback((value: string) => {
+    actions.setStagedImoveisFilters({ formato: value });
+  }, [actions]);
+
+  const handleOrigemChange = React.useCallback((value: string[]) => {
+    actions.setStagedImoveisFilters({ origem: value });
+  }, [actions]);
+
+  const handleEtapaChange = React.useCallback((value: string[]) => {
+    actions.setStagedImoveisFilters({ etapa: value });
+  }, [actions]);
+
+  const handleAreaChange = React.useCallback((value: [number, number]) => {
+    actions.setStagedImoveisFilters({ area: value });
+  }, [actions]);
+
+  const handleValorChange = React.useCallback((value: [number, number]) => {
+    actions.setStagedImoveisFilters({ valor: value });
+  }, [actions]);
 
   return (
     <BaseFilters
@@ -18,11 +48,11 @@ export const ImoveisFilters: React.FC = () => {
       formato={filters.formato}
       origem={filters.origem}
       etapa={filters.etapa}
-      onEstadoChange={(value) => actions.setStagedImoveisFilters({ estado: value })}
-      onCidadeChange={(value) => actions.setStagedImoveisFilters({ cidade: value })}
-      onFormatoChange={(value) => actions.setStagedImoveisFilters({ formato: value })}
-      onOrigemChange={(value) => actions.setStagedImoveisFilters({ origem: value })}
-      onEtapaChange={(value) => actions.setStagedImoveisFilters({ etapa: value })}
+      onEstadoChange={handleEstadoChange}
+      onCidadeChange={handleCidadeChange}
+      onFormatoChange={handleFormatoChange}
+      onOrigemChange={handleOrigemChange}
+      onEtapaChange={handleEtapaChange}
     >
       {/* Filtros específicos de imóveis */}
       
@@ -36,7 +66,7 @@ export const ImoveisFilters: React.FC = () => {
           max={1000}
           step={10}
           value={filters.area}
-          onValueChange={(value) => actions.setStagedImoveisFilters({ area: value })}
+          onValueChange={handleAreaChange}
           suffix="m²"
         />
       </div>
@@ -51,10 +81,13 @@ export const ImoveisFilters: React.FC = () => {
           max={5000000}
           step={10000}
           value={filters.valor}
-          onValueChange={(value) => actions.setStagedImoveisFilters({ valor: value })}
+          onValueChange={handleValorChange}
           prefix="R$ "
         />
       </div>
     </BaseFilters>
   )
-}
+});
+
+// 🚀 OTIMIZAÇÃO: Definir displayName para debugging
+ImoveisFilters.displayName = 'ImoveisFilters';

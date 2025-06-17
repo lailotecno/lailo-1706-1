@@ -1,8 +1,7 @@
-import React from 'react';
-import { Grid3x3, LayoutList, ChevronDown } from 'lucide-react';
+import React, { useCallback } from 'react';
+import { Grid3x3, LayoutList } from 'lucide-react';
 import { ViewMode, SortOption, Category } from '../../types/auction';
 import { TypeNavigationTabs } from '../TypeNavigationTabs';
-import { SortPopover } from '../SortPopover';
 
 interface DesktopHeaderProps {
   category: Category;
@@ -15,26 +14,20 @@ interface DesktopHeaderProps {
   onSortClose: () => void;
 }
 
-export const DesktopHeader: React.FC<DesktopHeaderProps> = ({
+// 🚀 OTIMIZAÇÃO: React.memo para evitar re-renderizações desnecessárias
+export const DesktopHeader: React.FC<DesktopHeaderProps> = React.memo(({
   category,
   viewMode,
-  sortOption,
-  showSortPopover,
-  onViewModeChange,
-  onSortToggle,
-  onSortChange,
-  onSortClose
+  onViewModeChange
 }) => {
-  const getSortLabel = (sort: SortOption) => {
-    const labels = {
-      'newest': 'Mais recentes',
-      'lowest-bid': 'Menor valor',
-      'highest-bid': 'Maior valor',
-      'highest-discount': 'Maior desconto',
-      'nearest': 'Mais próximos',
-    };
-    return labels[sort];
-  };
+  // 🚀 OTIMIZAÇÃO: Memoizar handlers
+  const handleHorizontalView = useCallback(() => {
+    onViewModeChange('horizontal');
+  }, [onViewModeChange]);
+
+  const handleVerticalView = useCallback(() => {
+    onViewModeChange('vertical');
+  }, [onViewModeChange]);
 
   return (
     <div className="hidden min-[768px]:block bg-white border-b border-gray-100 sticky top-0 z-30">
@@ -50,7 +43,7 @@ export const DesktopHeader: React.FC<DesktopHeaderProps> = ({
           {/* View Toggle */}
           <div className="flex bg-gray-100 rounded-lg p-1 flex-shrink-0">
             <button
-              onClick={() => onViewModeChange('horizontal')}
+              onClick={handleHorizontalView}
               className={`p-2 rounded-md transition-colors ${
                 viewMode === 'horizontal'
                   ? 'bg-white text-blue-600 shadow-sm'
@@ -61,7 +54,7 @@ export const DesktopHeader: React.FC<DesktopHeaderProps> = ({
               <LayoutList className="w-4 h-4" />
             </button>
             <button
-              onClick={() => onViewModeChange('vertical')}
+              onClick={handleVerticalView}
               className={`p-2 rounded-md transition-colors ${
                 viewMode === 'vertical'
                   ? 'bg-white text-blue-600 shadow-sm'
@@ -76,4 +69,7 @@ export const DesktopHeader: React.FC<DesktopHeaderProps> = ({
       </div>
     </div>
   );
-};
+});
+
+// 🚀 OTIMIZAÇÃO: Definir displayName para debugging
+DesktopHeader.displayName = 'DesktopHeader';

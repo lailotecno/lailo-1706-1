@@ -1,6 +1,5 @@
 import * as React from "react"
 import { ComboBoxSearch } from "./ComboBoxSearch"
-import { RangeSlider } from "./RangeSlider"
 import { FormatToggle } from "./FormatToggle"
 import { MultiToggleGrid } from "./MultiToggleGrid"
 import { getEstadosOptions, getMunicipiosOptions, fetchMunicipiosByEstado, Municipio } from "../../utils/ibgeApi"
@@ -24,7 +23,8 @@ interface BaseFiltersProps {
   children?: React.ReactNode; // Para filtros específicos (área, marca, etc.)
 }
 
-export const BaseFilters: React.FC<BaseFiltersProps> = ({
+// 🚀 OTIMIZAÇÃO: React.memo para evitar re-renderizações desnecessárias
+export const BaseFilters: React.FC<BaseFiltersProps> = React.memo(({
   estado,
   cidade,
   formato,
@@ -61,26 +61,29 @@ export const BaseFilters: React.FC<BaseFiltersProps> = ({
     }
   }, [estado])
 
-  const estados = getEstadosOptions()
-  const cidades = getMunicipiosOptions(municipios)
+  // 🚀 OTIMIZAÇÃO: Memoizar opções que não mudam
+  const estados = React.useMemo(() => getEstadosOptions(), []);
+  const cidades = React.useMemo(() => getMunicipiosOptions(municipios), [municipios]);
 
-  const origemOptions = [
+  const origemOptions = React.useMemo(() => [
     { value: "judicial", label: "Judicial" },
     { value: "extrajudicial", label: "Extrajudicial" },
     { value: "particular", label: "Particular" },
     { value: "publico", label: "Público" }
-  ]
+  ], []);
 
-  const etapaOptions = [
+  const etapaOptions = React.useMemo(() => [
     { value: "praca-unica", label: "Praça única" },
     { value: "primeira", label: "1ª Praça" },
     { value: "segunda", label: "2ª Praça" },
     { value: "terceira", label: "3ª Praça" }
-  ]
+  ], []);
 
-  const isVendaDireta = formato === "venda-direta"
+  // 🚀 OTIMIZAÇÃO: Memoizar estado derivado
+  const isVendaDireta = React.useMemo(() => formato === "venda-direta", [formato]);
 
-  const handleEstadoChange = (value: string) => {
+  // 🚀 OTIMIZAÇÃO: Memoizar handlers
+  const handleEstadoChange = React.useCallback((value: string) => {
     console.log('🏛️ BaseFilters - Estado mudou:', {
       newValue: value,
       willResetCidade: true
@@ -88,15 +91,15 @@ export const BaseFilters: React.FC<BaseFiltersProps> = ({
     
     onEstadoChange(value)
     onCidadeChange("") // Reset cidade when estado changes
-  }
+  }, [onEstadoChange, onCidadeChange]);
 
-  const handleCidadeChange = (value: string) => {
+  const handleCidadeChange = React.useCallback((value: string) => {
     console.log('🏙️ BaseFilters - Cidade mudou:', {
       newValue: value
     })
     
     onCidadeChange(value)
-  }
+  }, [onCidadeChange]);
 
   return (
     <div className="space-y-6">
@@ -167,4 +170,7 @@ export const BaseFilters: React.FC<BaseFiltersProps> = ({
       </div>
     </div>
   )
-}
+});
+
+// 🚀 OTIMIZAÇÃO: Definir displayName para debugging
+BaseFilters.displayName = 'BaseFilters';

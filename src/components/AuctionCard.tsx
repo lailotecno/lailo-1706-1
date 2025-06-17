@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { Auction, ViewMode } from '../types/auction';
 import { AuctionCardHorizontalBase } from './cards/AuctionCardHorizontalBase';
 import { AuctionCardHorizontalVehicle } from './cards/AuctionCardHorizontalVehicle';
@@ -10,7 +10,8 @@ interface AuctionCardProps {
   viewMode: ViewMode;
 }
 
-export const AuctionCard: React.FC<AuctionCardProps> = ({ auction, viewMode }) => {
+// 🚀 OTIMIZAÇÃO: React.memo para evitar re-renderizações desnecessárias
+export const AuctionCard: React.FC<AuctionCardProps> = React.memo(({ auction, viewMode }) => {
   // 🛡️ CORREÇÃO: Verificação defensiva para evitar erro #130
   if (!auction || typeof auction !== 'object') {
     console.warn('⚠️ AuctionCard: auction prop é inválido:', auction);
@@ -25,7 +26,8 @@ export const AuctionCard: React.FC<AuctionCardProps> = ({ auction, viewMode }) =
 
   const [isFavorited, setIsFavorited] = useState(false);
 
-  const formatCurrency = (amount: number) => {
+  // 🚀 OTIMIZAÇÃO: Memoizar formatação de moeda
+  const formatCurrency = useCallback((amount: number) => {
     if (typeof amount !== 'number' || isNaN(amount)) {
       return 'R$ 0';
     }
@@ -35,9 +37,10 @@ export const AuctionCard: React.FC<AuctionCardProps> = ({ auction, viewMode }) =
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(amount);
-  };
+  }, []);
 
-  const formatTimeRemaining = (endDate: string) => {
+  // 🚀 OTIMIZAÇÃO: Memoizar formatação de tempo
+  const formatTimeRemaining = useCallback((endDate: string) => {
     if (!endDate) return '0h';
     
     try {
@@ -60,19 +63,21 @@ export const AuctionCard: React.FC<AuctionCardProps> = ({ auction, viewMode }) =
       console.warn('⚠️ Erro ao formatar data:', endDate, error);
       return '0h';
     }
-  };
+  }, []);
 
-  const calculateDiscount = () => {
+  // 🚀 OTIMIZAÇÃO: Memoizar cálculo de desconto
+  const discount = useMemo(() => {
     if (!auction.appraised_value || typeof auction.appraised_value !== 'number' || 
         !auction.initial_bid_value || typeof auction.initial_bid_value !== 'number' ||
         auction.appraised_value <= auction.initial_bid_value) {
       return null;
     }
-    const discount = ((auction.appraised_value - auction.initial_bid_value) / auction.appraised_value) * 100;
-    return discount > 0 ? Math.round(discount) : null;
-  };
+    const discountValue = ((auction.appraised_value - auction.initial_bid_value) / auction.appraised_value) * 100;
+    return discountValue > 0 ? Math.round(discountValue) : null;
+  }, [auction.appraised_value, auction.initial_bid_value]);
 
-  const isNew = () => {
+  // 🚀 OTIMIZAÇÃO: Memoizar verificação de "novo"
+  const isNew = useMemo(() => {
     if (!auction.data_scraped) return false;
     
     try {
@@ -89,47 +94,69 @@ export const AuctionCard: React.FC<AuctionCardProps> = ({ auction, viewMode }) =
       console.warn('⚠️ Erro ao verificar se é novo:', auction.data_scraped, error);
       return false;
     }
-  };
+  }, [auction.data_scraped]);
 
-  const handleToggleFavorite = () => {
-    setIsFavorited(!isFavorited);
-  };
+  // 🚀 OTIMIZAÇÃO: Memoizar handlers
+  const handleToggleFavorite = useCallback(() => {
+    setIsFavorited(prev => !prev);
+  }, []);
 
-  const handleLink = () => {
+  const handleLink = useCallback(() => {
     if (auction.href) {
       window.open(auction.href, '_blank');
     }
-  };
+  }, [auction.href]);
 
-  const isVehicle = auction.type === 'vehicle';
+  // 🚀 OTIMIZAÇÃO: Memoizar dados derivados
+  const derivedData = useMemo(() => {
+    const isVehicle = auction.type === 'vehicle';
+    
+    // Create tags array with only origem and etapa
+    const tags = [];
+    if (auction.origin) tags.push(auction.origin);
+    if (auction.stage) tags.push(auction.stage);
 
-  // Create tags array with only origem and etapa
-  const tags = [];
-  if (auction.origin) tags.push(auction.origin);
-  if (auction.stage) tags.push(auction.stage);
+    // Mock area for properties (this would come from database)
+    const mockArea = isVehicle ? undefined : auction.useful_area_m2 ? `${auction.useful_area_m2}m²` : undefined;
 
-  // Mock area for properties (this would come from database)
-  const mockArea = isVehicle ? undefined : auction.useful_area_m2 ? `${auction.useful_area_m2}m²` : undefined;
+    // Calculate discount text
+    const discountText = discount ? `${discount}% OFF` : undefined;
 
-  // Calculate discount
-  const discount = calculateDiscount();
-  const discountText = discount ? `${discount}% OFF` : undefined;
+    return {
+      isVehicle,
+      tags,
+      mockArea,
+      discountText
+    };
+  }, [auction.type, auction.origin, auction.stage, auction.useful_area_m2, discount]);
 
-  // Common props for all card types
-  const commonProps = {
+  // 🚀 OTIMIZAÇÃO: Memoizar props comuns
+  const commonProps = useMemo(() => ({
     price: formatCurrency(auction.initial_bid_value || 0),
     imageUrl: auction.image || '',
     isFavorited,
     onToggleFavorite: handleToggleFavorite,
     onLink: handleLink,
-    isNew: isNew(),
+    isNew: isNew,
     date: formatTimeRemaining(auction.end_date),
-    tags: tags,
-    discount: discountText,
-  };
+    tags: derivedData.tags,
+    discount: derivedData.discountText,
+  }), [
+    auction.initial_bid_value,
+    auction.image,
+    auction.end_date,
+    isFavorited,
+    isNew,
+    derivedData.tags,
+    derivedData.discountText,
+    formatCurrency,
+    formatTimeRemaining,
+    handleToggleFavorite,
+    handleLink
+  ]);
 
   if (viewMode === 'horizontal') {
-    if (isVehicle) {
+    if (derivedData.isVehicle) {
       return (
         <AuctionCardHorizontalVehicle
           {...commonProps}
@@ -146,13 +173,13 @@ export const AuctionCard: React.FC<AuctionCardProps> = ({ auction, viewMode }) =
           {...commonProps}
           titleLeft={auction.property_type || "Imóvel"}
           subtitle={`${auction.property_address || 'Endereço não informado'} – ${auction.city || 'N/A'}, ${auction.state || 'N/A'}`}
-          area={mockArea}
+          area={derivedData.mockArea}
           appraisedValue={auction.appraised_value ? formatCurrency(auction.appraised_value) : undefined}
         />
       );
     }
   } else {
-    if (isVehicle) {
+    if (derivedData.isVehicle) {
       return (
         <AuctionCardVerticalVehicle
           {...commonProps}
@@ -169,10 +196,13 @@ export const AuctionCard: React.FC<AuctionCardProps> = ({ auction, viewMode }) =
           {...commonProps}
           titleLeft={auction.property_type || "Imóvel"}
           subtitle={`${auction.property_address || 'Endereço não informado'} – ${auction.city || 'N/A'}, ${auction.state || 'N/A'}`}
-          area={mockArea}
+          area={derivedData.mockArea}
           appraisedValue={auction.appraised_value ? formatCurrency(auction.appraised_value) : undefined}
         />
       );
     }
   }
-};
+});
+
+// 🚀 OTIMIZAÇÃO: Definir displayName para debugging
+AuctionCard.displayName = 'AuctionCard';

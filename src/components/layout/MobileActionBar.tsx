@@ -14,7 +14,8 @@ interface MobileActionBarProps {
   onViewModeChange: (mode: ViewMode) => void;
 }
 
-export const MobileActionBar: React.FC<MobileActionBarProps> = ({
+// 🚀 OTIMIZAÇÃO: React.memo para evitar re-renderizações desnecessárias
+export const MobileActionBar: React.FC<MobileActionBarProps> = React.memo(({
   showSearch,
   searchQuery,
   viewMode,
@@ -105,4 +106,7 @@ export const MobileActionBar: React.FC<MobileActionBarProps> = ({
       )}
     </div>
   );
-};
+});
+
+// 🚀 OTIMIZAÇÃO: Definir displayName para debugging
+MobileActionBar.displayName = 'MobileActionBar';

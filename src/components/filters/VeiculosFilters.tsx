@@ -8,7 +8,8 @@ interface VeiculosFiltersProps {
   currentVehicleType?: string;
 }
 
-export const VeiculosFilters: React.FC<VeiculosFiltersProps> = ({
+// 🚀 OTIMIZAÇÃO: React.memo para evitar re-renderizações desnecessárias
+export const VeiculosFilters: React.FC<VeiculosFiltersProps> = React.memo(({
   currentVehicleType = 'todos'
 }) => {
   const { state, actions } = useAppContext();
@@ -19,16 +20,17 @@ export const VeiculosFilters: React.FC<VeiculosFiltersProps> = ({
     currentVehicleType
   });
 
-  const marcas = [
+  // 🚀 OTIMIZAÇÃO: Memoizar opções que não mudam
+  const marcas = React.useMemo(() => [
     { value: "all", label: "Todas as marcas" },
     { value: "toyota", label: "Toyota" },
     { value: "honda", label: "Honda" },
     { value: "volkswagen", label: "Volkswagen" },
     { value: "ford", label: "Ford" },
     { value: "chevrolet", label: "Chevrolet" },
-  ]
+  ], []);
 
-  const getModelos = (marca: string) => {
+  const getModelos = React.useCallback((marca: string) => {
     const modelosPorMarca: Record<string, Array<{ value: string; label: string }>> = {
       toyota: [
         { value: "all", label: "Todos os modelos" },
@@ -45,9 +47,9 @@ export const VeiculosFilters: React.FC<VeiculosFiltersProps> = ({
     }
     
     return modelosPorMarca[marca] || [{ value: "all", label: "Todos os modelos" }]
-  }
+  }, []);
 
-  const cores = [
+  const cores = React.useMemo(() => [
     { value: "all", label: "Todas as cores" },
     { value: "amarelo", label: "Amarelo" },
     { value: "azul", label: "Azul" },
@@ -66,10 +68,57 @@ export const VeiculosFilters: React.FC<VeiculosFiltersProps> = ({
     { value: "verde", label: "Verde" },
     { value: "vermelho", label: "Vermelho" },
     { value: "vinho", label: "Vinho" }
-  ]
+  ], []);
   
-  // Verificar se deve mostrar os filtros de marca e modelo
-  const shouldShowBrandModelFilters = currentVehicleType !== 'todos' && currentVehicleType !== 'nao-informado'
+  // 🚀 OTIMIZAÇÃO: Memoizar estado derivado
+  const shouldShowBrandModelFilters = React.useMemo(() => 
+    currentVehicleType !== 'todos' && currentVehicleType !== 'nao-informado',
+    [currentVehicleType]
+  );
+
+  // 🚀 OTIMIZAÇÃO: Memoizar handlers
+  const handleEstadoChange = React.useCallback((value: string) => {
+    actions.setStagedVeiculosFilters({ estado: value });
+  }, [actions]);
+
+  const handleCidadeChange = React.useCallback((value: string) => {
+    actions.setStagedVeiculosFilters({ cidade: value });
+  }, [actions]);
+
+  const handleFormatoChange = React.useCallback((value: string) => {
+    actions.setStagedVeiculosFilters({ formato: value });
+  }, [actions]);
+
+  const handleOrigemChange = React.useCallback((value: string[]) => {
+    actions.setStagedVeiculosFilters({ origem: value });
+  }, [actions]);
+
+  const handleEtapaChange = React.useCallback((value: string[]) => {
+    actions.setStagedVeiculosFilters({ etapa: value });
+  }, [actions]);
+
+  const handleMarcaChange = React.useCallback((value: string) => {
+    actions.setStagedVeiculosFilters({ 
+      marca: value,
+      modelo: "" // Reset modelo when marca changes
+    });
+  }, [actions]);
+
+  const handleModeloChange = React.useCallback((value: string) => {
+    actions.setStagedVeiculosFilters({ modelo: value });
+  }, [actions]);
+
+  const handleCorChange = React.useCallback((value: string) => {
+    actions.setStagedVeiculosFilters({ cor: value });
+  }, [actions]);
+
+  const handleAnoChange = React.useCallback((value: [number, number]) => {
+    actions.setStagedVeiculosFilters({ ano: value });
+  }, [actions]);
+
+  const handlePrecoChange = React.useCallback((value: [number, number]) => {
+    actions.setStagedVeiculosFilters({ preco: value });
+  }, [actions]);
 
   return (
     <BaseFilters
@@ -78,11 +127,11 @@ export const VeiculosFilters: React.FC<VeiculosFiltersProps> = ({
       formato={filters.formato}
       origem={filters.origem}
       etapa={filters.etapa}
-      onEstadoChange={(value) => actions.setStagedVeiculosFilters({ estado: value })}
-      onCidadeChange={(value) => actions.setStagedVeiculosFilters({ cidade: value })}
-      onFormatoChange={(value) => actions.setStagedVeiculosFilters({ formato: value })}
-      onOrigemChange={(value) => actions.setStagedVeiculosFilters({ origem: value })}
-      onEtapaChange={(value) => actions.setStagedVeiculosFilters({ etapa: value })}
+      onEstadoChange={handleEstadoChange}
+      onCidadeChange={handleCidadeChange}
+      onFormatoChange={handleFormatoChange}
+      onOrigemChange={handleOrigemChange}
+      onEtapaChange={handleEtapaChange}
     >
       {/* Filtros específicos de veículos */}
       
@@ -96,19 +145,14 @@ export const VeiculosFilters: React.FC<VeiculosFiltersProps> = ({
             <ComboBoxSearch
               options={marcas}
               value={filters.marca}
-              onValueChange={(value) => {
-                actions.setStagedVeiculosFilters({ 
-                  marca: value,
-                  modelo: "" // Reset modelo when marca changes
-                })
-              }}
+              onValueChange={handleMarcaChange}
               placeholder="Marca"
               searchPlaceholder="Buscar marca..."
             />
             <ComboBoxSearch
               options={getModelos(filters.marca)}
               value={filters.modelo}
-              onValueChange={(value) => actions.setStagedVeiculosFilters({ modelo: value })}
+              onValueChange={handleModeloChange}
               placeholder="Modelo"
               searchPlaceholder="Buscar modelo..."
               disabled={!filters.marca || filters.marca === "all"}
@@ -125,7 +169,7 @@ export const VeiculosFilters: React.FC<VeiculosFiltersProps> = ({
         <ComboBoxSearch
           options={cores}
           value={filters.cor}
-          onValueChange={(value) => actions.setStagedVeiculosFilters({ cor: value })}
+          onValueChange={handleCorChange}
           placeholder="Cor"
           searchPlaceholder="Buscar cor..."
         />
@@ -141,7 +185,7 @@ export const VeiculosFilters: React.FC<VeiculosFiltersProps> = ({
           max={2024}
           step={1}
           value={filters.ano}
-          onValueChange={(value) => actions.setStagedVeiculosFilters({ ano: value })}
+          onValueChange={handleAnoChange}
         />
       </div>
 
@@ -155,10 +199,13 @@ export const VeiculosFilters: React.FC<VeiculosFiltersProps> = ({
           max={500000}
           step={5000}
           value={filters.preco}
-          onValueChange={(value) => actions.setStagedVeiculosFilters({ preco: value })}
+          onValueChange={handlePrecoChange}
           prefix="R$ "
         />
       </div>
     </BaseFilters>
   )
-}
+});
+
+// 🚀 OTIMIZAÇÃO: Definir displayName para debugging
+VeiculosFilters.displayName = 'VeiculosFilters';

@@ -7,10 +7,13 @@ interface UseActiveFiltersProps {
 }
 
 export const useActiveFilters = ({ category, appliedFilters }: UseActiveFiltersProps) => {
+  // 🚀 OTIMIZAÇÃO: useMemo com dependências estáveis
   return useMemo(() => {
+    console.log('🔍 useActiveFilters - Verificando filtros ativos para:', category);
+    
     const filters = category === 'imoveis' ? appliedFilters.imoveis : appliedFilters.veiculos;
     
-    return (
+    const hasActiveFilters = (
       (filters.estado && filters.estado !== "all") ||
       (filters.cidade && filters.cidade !== "all") ||
       filters.formato ||
@@ -32,5 +35,12 @@ export const useActiveFilters = ({ category, appliedFilters }: UseActiveFiltersP
         filters.valor[1] !== 5000000
       ))
     );
-  }, [category, appliedFilters]);
+    
+    console.log('📊 useActiveFilters - Resultado:', hasActiveFilters);
+    return hasActiveFilters;
+  }, [
+    category,
+    // 🎯 OTIMIZAÇÃO: Usar JSON.stringify para comparação profunda estável
+    JSON.stringify(appliedFilters)
+  ]);
 };

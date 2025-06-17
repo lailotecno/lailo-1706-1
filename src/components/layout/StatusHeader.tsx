@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo, useCallback } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { SortOption } from '../../types/auction';
 import { SortPopover } from '../SortPopover';
@@ -14,7 +14,8 @@ interface StatusHeaderProps {
   onSortClose: () => void;
 }
 
-export const StatusHeader: React.FC<StatusHeaderProps> = ({
+// 🚀 OTIMIZAÇÃO: React.memo para evitar re-renderizações desnecessárias
+export const StatusHeader: React.FC<StatusHeaderProps> = React.memo(({
   totalAuctions,
   totalSites,
   newAuctions,
@@ -24,7 +25,8 @@ export const StatusHeader: React.FC<StatusHeaderProps> = ({
   onSortChange,
   onSortClose
 }) => {
-  const getSortLabel = (sort: SortOption) => {
+  // 🚀 OTIMIZAÇÃO: Memoizar labels de ordenação
+  const getSortLabel = useCallback((sort: SortOption) => {
     const labels = {
       'newest': 'Mais recentes',
       'lowest-bid': 'Menor valor',
@@ -33,9 +35,10 @@ export const StatusHeader: React.FC<StatusHeaderProps> = ({
       'nearest': 'Mais próximos',
     };
     return labels[sort];
-  };
+  }, []);
 
-  const getStatusText = () => {
+  // 🚀 OTIMIZAÇÃO: Memoizar texto de status
+  const statusText = useMemo(() => {
     return (
       <>
         <span className="font-medium">Encontramos</span> <span className="font-semibold text-blue-600">{totalAuctions}</span> <span className="font-medium">leilões em</span> <span className="font-semibold text-blue-600">{totalSites}</span> <span className="font-medium">sites</span>
@@ -44,13 +47,13 @@ export const StatusHeader: React.FC<StatusHeaderProps> = ({
         )}
       </>
     );
-  };
+  }, [totalAuctions, totalSites, newAuctions]);
 
   return (
     <div className="flex flex-col min-[768px]:flex-row min-[768px]:items-center min-[768px]:justify-between py-4 gap-3 w-full">
       <div className="min-w-0 flex-1">
         <p className="text-gray-600 text-sm break-words">
-          {getStatusText()}
+          {statusText}
         </p>
       </div>
       
@@ -77,4 +80,7 @@ export const StatusHeader: React.FC<StatusHeaderProps> = ({
       </div>
     </div>
   );
-};
+});
+
+// 🚀 OTIMIZAÇÃO: Definir displayName para debugging
+StatusHeader.displayName = 'StatusHeader';

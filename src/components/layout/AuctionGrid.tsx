@@ -7,7 +7,13 @@ interface AuctionGridProps {
   viewMode: ViewMode;
 }
 
-export const AuctionGrid: React.FC<AuctionGridProps> = ({ auctions, viewMode }) => {
+// 🚀 OTIMIZAÇÃO: React.memo para evitar re-renderizações desnecessárias
+export const AuctionGrid: React.FC<AuctionGridProps> = React.memo(({ auctions, viewMode }) => {
+  console.log('🎨 AuctionGrid - Renderizando grade com:', {
+    auctionsCount: auctions.length,
+    viewMode
+  });
+
   return (
     <div className={
       viewMode === 'horizontal'
@@ -23,4 +29,7 @@ export const AuctionGrid: React.FC<AuctionGridProps> = ({ auctions, viewMode }) 
       ))}
     </div>
   );
-};
+});
+
+// 🚀 OTIMIZAÇÃO: Definir displayName para debugging
+AuctionGrid.displayName = 'AuctionGrid';

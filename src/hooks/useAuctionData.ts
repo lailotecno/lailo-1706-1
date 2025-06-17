@@ -17,8 +17,9 @@ export const useAuctionData = ({
   sortOption,
   searchQuery
 }: UseAuctionDataProps) => {
+  // 🚀 OTIMIZAÇÃO: useMemo com dependências específicas e estáveis
   return useMemo(() => {
-    console.log('🔍 useAuctionData - Buscando leilões:', { 
+    console.log('🔍 useAuctionData - Recalculando leilões:', { 
       category, 
       currentType, 
       sortOption, 
@@ -49,12 +50,20 @@ export const useAuctionData = ({
       };
 
       const result = getAuctionsByCategory(category, currentType, filters, sortOption, searchQuery);
-      console.log('📊 useAuctionData - Resultado:', result);
+      console.log('📊 useAuctionData - Resultado calculado:', result);
       
       return result;
     } catch (error) {
       console.error('❌ Erro ao buscar leilões:', error);
       return { auctions: [], totalSites: 0, newAuctions: 0 };
     }
-  }, [category, currentType, appliedFilters, sortOption, searchQuery]);
+  }, [
+    // 🎯 OTIMIZAÇÃO: Dependências específicas e estáveis
+    category,
+    currentType,
+    sortOption,
+    searchQuery,
+    // Para filtros, usar JSON.stringify para comparação profunda estável
+    JSON.stringify(appliedFilters)
+  ]);
 };
