@@ -1,482 +1,1329 @@
-import { Auction } from '../types/auction';
-import { normalizeVehicleType, normalizePropertyType } from '../utils/typeNormalization';
-import { SortOption } from '../types/auction';
+import { Auction, SortOption, Category } from '../types/auction';
 
-// Helper function to normalize strings for comparison
-// FIXED: Now properly handles diacritics and special characters while preserving spaces and numbers
-const normalizeString = (str: string): string => {
-  return str
-    .normalize('NFD') // Decompose characters with diacritics
-    .replace(/[\u0300-\u036f]/g, '') // Remove diacritics
-    .toLowerCase()
-    .replace(/[^\w\s]/g, '') // Remove only punctuation, keep letters, numbers and spaces
-    .replace(/\s+/g, ' ') // Normalize multiple spaces to single space
-    .trim();
-};
+// Mock data for auctions
+const mockAuctions: Auction[] = [
+  // VEÍCULOS - CARROS (30 + 20 novos = 50 total)
+  {
+    id: 'car-001',
+    title: 'Toyota Corolla XEi 2.0',
+    description: 'Sedan automático em excelente estado de conservação',
+    currentBid: 45000,
+    minimumBid: 40000,
+    endDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
+    imageUrl: 'https://images.pexels.com/photos/116675/pexels-photo-116675.jpeg?auto=compress&cs=tinysrgb&w=800',
+    location: 'São Paulo/SP',
+    site: 'Leilões Online',
+    category: 'Veículos',
+    isNew: true,
+    bidsCount: 12,
+    color: 'Prata',
+    year: '2020',
+    origem: 'Judicial',
+    etapa: 'primeira',
+    vehicleType: 'carros',
+    formato: 'leilao',
+    appraisedValue: 55000
+  },
+  {
+    id: 'car-002',
+    title: 'Honda Civic Sport 1.5 Turbo',
+    description: 'Hatchback turbo com baixa quilometragem',
+    currentBid: 78000,
+    minimumBid: 70000,
+    endDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
+    imageUrl: 'https://images.pexels.com/photos/3802510/pexels-photo-3802510.jpeg?auto=compress&cs=tinysrgb&w=800',
+    location: 'Rio de Janeiro/RJ',
+    site: 'Super Leilões',
+    category: 'Veículos',
+    isNew: false,
+    bidsCount: 8,
+    color: 'Azul',
+    year: '2021',
+    origem: 'Extrajudicial',
+    etapa: 'segunda',
+    vehicleType: 'carros',
+    formato: 'leilao',
+    appraisedValue: 95000
+  },
+  {
+    id: 'car-003',
+    title: 'Volkswagen Jetta Comfortline',
+    description: 'Sedan alemão com interior em couro',
+    currentBid: 52000,
+    minimumBid: 48000,
+    endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    imageUrl: 'https://images.pexels.com/photos/1545743/pexels-photo-1545743.jpeg?auto=compress&cs=tinysrgb&w=800',
+    location: 'Belo Horizonte/MG',
+    site: 'Mega Leilões',
+    category: 'Veículos',
+    isNew: true,
+    bidsCount: 15,
+    color: 'Branco',
+    year: '2019',
+    origem: 'Particular',
+    etapa: 'primeira',
+    vehicleType: 'carros',
+    formato: 'leilao',
+    appraisedValue: 65000
+  },
+  {
+    id: 'car-004',
+    title: 'Ford Mustang GT 5.0 V8',
+    description: 'Muscle car americano com motor V8',
+    currentBid: 180000,
+    minimumBid: 170000,
+    endDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
+    imageUrl: 'https://images.pexels.com/photos/544542/pexels-photo-544542.jpeg?auto=compress&cs=tinysrgb&w=800',
+    location: 'Curitiba/PR',
+    site: 'Premium Leilões',
+    category: 'Veículos',
+    isNew: false,
+    bidsCount: 25,
+    color: 'Vermelho',
+    year: '2018',
+    origem: 'Judicial',
+    etapa: 'terceira',
+    vehicleType: 'carros',
+    formato: 'leilao',
+    appraisedValue: 220000
+  },
+  {
+    id: 'car-005',
+    title: 'Chevrolet Onix Plus Premier',
+    description: 'Sedan compacto com tecnologia avançada',
+    currentBid: 38000,
+    minimumBid: 35000,
+    endDate: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000),
+    imageUrl: 'https://images.pexels.com/photos/1592384/pexels-photo-1592384.jpeg?auto=compress&cs=tinysrgb&w=800',
+    location: 'Porto Alegre/RS',
+    site: 'Leilões RS',
+    category: 'Veículos',
+    isNew: true,
+    bidsCount: 6,
+    color: 'Cinza',
+    year: '2022',
+    origem: 'Extrajudicial',
+    etapa: 'primeira',
+    vehicleType: 'carros',
+    formato: 'leilao',
+    appraisedValue: 48000
+  },
+  {
+    id: 'car-006',
+    title: 'BMW 320i Sport GP',
+    description: 'Sedan premium alemão com acabamento esportivo',
+    currentBid: 95000,
+    minimumBid: 90000,
+    endDate: new Date(Date.now() + 6 * 24 * 60 * 60 * 1000),
+    imageUrl: 'https://images.pexels.com/photos/1719648/pexels-photo-1719648.jpeg?auto=compress&cs=tinysrgb&w=800',
+    location: 'Brasília/DF',
+    site: 'Capital Leilões',
+    category: 'Veículos',
+    isNew: false,
+    bidsCount: 18,
+    color: 'Preto',
+    year: '2020',
+    origem: 'Particular',
+    etapa: 'segunda',
+    vehicleType: 'carros',
+    formato: 'leilao',
+    appraisedValue: 120000
+  },
+  {
+    id: 'car-007',
+    title: 'Audi A3 Sedan Prestige Plus',
+    description: 'Sedan de luxo com interior premium',
+    currentBid: 72000,
+    minimumBid: 68000,
+    endDate: new Date(Date.now() + 8 * 24 * 60 * 60 * 1000),
+    imageUrl: 'https://images.pexels.com/photos/1007410/pexels-photo-1007410.jpeg?auto=compress&cs=tinysrgb&w=800',
+    location: 'Salvador/BA',
+    site: 'Bahia Leilões',
+    category: 'Veículos',
+    isNew: true,
+    bidsCount: 11,
+    color: 'Prata',
+    year: '2021',
+    origem: 'Judicial',
+    etapa: 'primeira',
+    vehicleType: 'carros',
+    formato: 'leilao',
+    appraisedValue: 88000
+  },
+  {
+    id: 'car-008',
+    title: 'Hyundai HB20S Evolution',
+    description: 'Sedan compacto econômico e confiável',
+    currentBid: 32000,
+    minimumBid: 30000,
+    endDate: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000),
+    imageUrl: 'https://images.pexels.com/photos/1592384/pexels-photo-1592384.jpeg?auto=compress&cs=tinysrgb&w=800',
+    location: 'Fortaleza/CE',
+    site: 'Nordeste Leilões',
+    category: 'Veículos',
+    isNew: false,
+    bidsCount: 9,
+    color: 'Branco',
+    year: '2020',
+    origem: 'Extrajudicial',
+    etapa: 'segunda',
+    vehicleType: 'carros',
+    formato: 'leilao',
+    appraisedValue: 42000
+  },
+  {
+    id: 'car-009',
+    title: 'Mercedes-Benz C180 Avantgarde',
+    description: 'Sedan de luxo alemão com tecnologia de ponta',
+    currentBid: 125000,
+    minimumBid: 120000,
+    endDate: new Date(Date.now() + 9 * 24 * 60 * 60 * 1000),
+    imageUrl: 'https://images.pexels.com/photos/1719648/pexels-photo-1719648.jpeg?auto=compress&cs=tinysrgb&w=800',
+    location: 'Campinas/SP',
+    site: 'Elite Leilões',
+    category: 'Veículos',
+    isNew: true,
+    bidsCount: 22,
+    color: 'Azul',
+    year: '2019',
+    origem: 'Particular',
+    etapa: 'primeira',
+    vehicleType: 'carros',
+    formato: 'leilao',
+    appraisedValue: 155000
+  },
+  {
+    id: 'car-010',
+    title: 'Nissan Versa Exclusive CVT',
+    description: 'Sedan automático com câmbio CVT',
+    currentBid: 42000,
+    minimumBid: 40000,
+    endDate: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000),
+    imageUrl: 'https://images.pexels.com/photos/116675/pexels-photo-116675.jpeg?auto=compress&cs=tinysrgb&w=800',
+    location: 'Recife/PE',
+    site: 'Pernambuco Leilões',
+    category: 'Veículos',
+    isNew: false,
+    bidsCount: 7,
+    color: 'Cinza',
+    year: '2021',
+    origem: 'Judicial',
+    etapa: 'terceira',
+    vehicleType: 'carros',
+    formato: 'leilao',
+    appraisedValue: 52000
+  },
+  {
+    id: 'car-011',
+    title: 'Fiat Cronos Precision 1.8',
+    description: 'Sedan nacional com motor 1.8 flex',
+    currentBid: 35000,
+    minimumBid: 32000,
+    endDate: new Date(Date.now() + 11 * 24 * 60 * 60 * 1000),
+    imageUrl: 'https://images.pexels.com/photos/1592384/pexels-photo-1592384.jpeg?auto=compress&cs=tinysrgb&w=800',
+    location: 'Goiânia/GO',
+    site: 'Centro-Oeste Leilões',
+    category: 'Veículos',
+    isNew: true,
+    bidsCount: 5,
+    color: 'Vermelho',
+    year: '2020',
+    origem: 'Extrajudicial',
+    etapa: 'primeira',
+    vehicleType: 'carros',
+    formato: 'leilao',
+    appraisedValue: 45000
+  },
+  {
+    id: 'car-012',
+    title: 'Renault Logan Zen 1.6',
+    description: 'Sedan francês econômico e espaçoso',
+    currentBid: 28000,
+    minimumBid: 26000,
+    endDate: new Date(Date.now() + 12 * 24 * 60 * 60 * 1000),
+    imageUrl: 'https://images.pexels.com/photos/116675/pexels-photo-116675.jpeg?auto=compress&cs=tinysrgb&w=800',
+    location: 'Manaus/AM',
+    site: 'Amazônia Leilões',
+    category: 'Veículos',
+    isNew: false,
+    bidsCount: 4,
+    color: 'Prata',
+    year: '2019',
+    origem: 'Particular',
+    etapa: 'segunda',
+    vehicleType: 'carros',
+    formato: 'leilao',
+    appraisedValue: 38000
+  },
+  {
+    id: 'car-013',
+    title: 'Volkswagen Polo Highline TSI',
+    description: 'Hatchback premium com motor turbo',
+    currentBid: 58000,
+    minimumBid: 55000,
+    endDate: new Date(Date.now() + 13 * 24 * 60 * 60 * 1000),
+    imageUrl: 'https://images.pexels.com/photos/3802510/pexels-photo-3802510.jpeg?auto=compress&cs=tinysrgb&w=800',
+    location: 'Florianópolis/SC',
+    site: 'Santa Catarina Leilões',
+    category: 'Veículos',
+    isNew: true,
+    bidsCount: 13,
+    color: 'Branco',
+    year: '2021',
+    origem: 'Judicial',
+    etapa: 'primeira',
+    vehicleType: 'carros',
+    formato: 'leilao',
+    appraisedValue: 72000
+  },
+  {
+    id: 'car-014',
+    title: 'Peugeot 208 Griffe 1.6',
+    description: 'Hatchback francês com design moderno',
+    currentBid: 33000,
+    minimumBid: 31000,
+    endDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
+    imageUrl: 'https://images.pexels.com/photos/1592384/pexels-photo-1592384.jpeg?auto=compress&cs=tinysrgb&w=800',
+    location: 'Vitória/ES',
+    site: 'Espírito Santo Leilões',
+    category: 'Veículos',
+    isNew: false,
+    bidsCount: 8,
+    color: 'Azul',
+    year: '2018',
+    origem: 'Extrajudicial',
+    etapa: 'terceira',
+    vehicleType: 'carros',
+    formato: 'leilao',
+    appraisedValue: 43000
+  },
+  {
+    id: 'car-015',
+    title: 'Jeep Compass Sport 2.0',
+    description: 'SUV compacto com tração 4x4',
+    currentBid: 85000,
+    minimumBid: 80000,
+    endDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000),
+    imageUrl: 'https://images.pexels.com/photos/1545743/pexels-photo-1545743.jpeg?auto=compress&cs=tinysrgb&w=800',
+    location: 'Campo Grande/MS',
+    site: 'Mato Grosso do Sul Leilões',
+    category: 'Veículos',
+    isNew: true,
+    bidsCount: 16,
+    color: 'Preto',
+    year: '2020',
+    origem: 'Particular',
+    etapa: 'primeira',
+    vehicleType: 'carros',
+    formato: 'leilao',
+    appraisedValue: 105000
+  },
+  {
+    id: 'car-016',
+    title: 'Mitsubishi Lancer Evolution X',
+    description: 'Sedan esportivo com tração integral',
+    currentBid: 145000,
+    minimumBid: 140000,
+    endDate: new Date(Date.now() + 16 * 24 * 60 * 60 * 1000),
+    imageUrl: 'https://images.pexels.com/photos/544542/pexels-photo-544542.jpeg?auto=compress&cs=tinysrgb&w=800',
+    location: 'Cuiabá/MT',
+    site: 'Mato Grosso Leilões',
+    category: 'Veículos',
+    isNew: false,
+    bidsCount: 28,
+    color: 'Branco',
+    year: '2017',
+    origem: 'Judicial',
+    etapa: 'segunda',
+    vehicleType: 'carros',
+    formato: 'leilao',
+    appraisedValue: 180000
+  },
+  {
+    id: 'car-017',
+    title: 'Subaru Impreza WRX STI',
+    description: 'Sedan esportivo japonês de alta performance',
+    currentBid: 165000,
+    minimumBid: 160000,
+    endDate: new Date(Date.now() + 17 * 24 * 60 * 60 * 1000),
+    imageUrl: 'https://images.pexels.com/photos/1719648/pexels-photo-1719648.jpeg?auto=compress&cs=tinysrgb&w=800',
+    location: 'João Pessoa/PB',
+    site: 'Paraíba Leilões',
+    category: 'Veículos',
+    isNew: true,
+    bidsCount: 31,
+    color: 'Azul',
+    year: '2018',
+    origem: 'Extrajudicial',
+    etapa: 'primeira',
+    vehicleType: 'carros',
+    formato: 'leilao',
+    appraisedValue: 200000
+  },
+  {
+    id: 'car-018',
+    title: 'Kia Cerato SX 2.0',
+    description: 'Sedan coreano com acabamento premium',
+    currentBid: 48000,
+    minimumBid: 45000,
+    endDate: new Date(Date.now() + 18 * 24 * 60 * 60 * 1000),
+    imageUrl: 'https://images.pexels.com/photos/116675/pexels-photo-116675.jpeg?auto=compress&cs=tinysrgb&w=800',
+    location: 'Natal/RN',
+    site: 'Rio Grande do Norte Leilões',
+    category: 'Veículos',
+    isNew: false,
+    bidsCount: 10,
+    color: 'Prata',
+    year: '2019',
+    origem: 'Particular',
+    etapa: 'terceira',
+    vehicleType: 'carros',
+    formato: 'leilao',
+    appraisedValue: 62000
+  },
+  {
+    id: 'car-019',
+    title: 'Citroën C4 Lounge Exclusive',
+    description: 'Sedan francês com design diferenciado',
+    currentBid: 41000,
+    minimumBid: 38000,
+    endDate: new Date(Date.now() + 19 * 24 * 60 * 60 * 1000),
+    imageUrl: 'https://images.pexels.com/photos/1592384/pexels-photo-1592384.jpeg?auto=compress&cs=tinysrgb&w=800',
+    location: 'Maceió/AL',
+    site: 'Alagoas Leilões',
+    category: 'Veículos',
+    isNew: true,
+    bidsCount: 6,
+    color: 'Cinza',
+    year: '2020',
+    origem: 'Judicial',
+    etapa: 'primeira',
+    vehicleType: 'carros',
+    formato: 'leilao',
+    appraisedValue: 53000
+  },
+  {
+    id: 'car-020',
+    title: 'Mazda3 Sedan 2.0',
+    description: 'Sedan japonês com design elegante',
+    currentBid: 55000,
+    minimumBid: 52000,
+    endDate: new Date(Date.now() + 20 * 24 * 60 * 60 * 1000),
+    imageUrl: 'https://images.pexels.com/photos/3802510/pexels-photo-3802510.jpeg?auto=compress&cs=tinysrgb&w=800',
+    location: 'Aracaju/SE',
+    site: 'Sergipe Leilões',
+    category: 'Veículos',
+    isNew: false,
+    bidsCount: 14,
+    color: 'Vermelho',
+    year: '2021',
+    origem: 'Extrajudicial',
+    etapa: 'segunda',
+    vehicleType: 'carros',
+    formato: 'leilao',
+    appraisedValue: 68000
+  },
+  {
+    id: 'car-021',
+    title: 'Volvo S60 T5 Momentum',
+    description: 'Sedan sueco de luxo com segurança avançada',
+    currentBid: 115000,
+    minimumBid: 110000,
+    endDate: new Date(Date.now() + 21 * 24 * 60 * 60 * 1000),
+    imageUrl: 'https://images.pexels.com/photos/1719648/pexels-photo-1719648.jpeg?auto=compress&cs=tinysrgb&w=800',
+    location: 'Teresina/PI',
+    site: 'Piauí Leilões',
+    category: 'Veículos',
+    isNew: true,
+    bidsCount: 19,
+    color: 'Preto',
+    year: '2020',
+    origem: 'Particular',
+    etapa: 'primeira',
+    vehicleType: 'carros',
+    formato: 'leilao',
+    appraisedValue: 145000
+  },
+  {
+    id: 'car-022',
+    title: 'Lexus IS 250 F-Sport',
+    description: 'Sedan de luxo japonês com acabamento esportivo',
+    currentBid: 135000,
+    minimumBid: 130000,
+    endDate: new Date(Date.now() + 22 * 24 * 60 * 60 * 1000),
+    imageUrl: 'https://images.pexels.com/photos/544542/pexels-photo-544542.jpeg?auto=compress&cs=tinysrgb&w=800',
+    location: 'São Luís/MA',
+    site: 'Maranhão Leilões',
+    category: 'Veículos',
+    isNew: false,
+    bidsCount: 24,
+    color: 'Prata',
+    year: '2018',
+    origem: 'Judicial',
+    etapa: 'terceira',
+    vehicleType: 'carros',
+    formato: 'leilao',
+    appraisedValue: 170000
+  },
+  {
+    id: 'car-023',
+    title: 'Infiniti Q50 Red Sport',
+    description: 'Sedan esportivo de luxo com motor V6 biturbo',
+    currentBid: 155000,
+    minimumBid: 150000,
+    endDate: new Date(Date.now() + 23 * 24 * 60 * 60 * 1000),
+    imageUrl: 'https://images.pexels.com/photos/1719648/pexels-photo-1719648.jpeg?auto=compress&cs=tinysrgb&w=800',
+    location: 'Belém/PA',
+    site: 'Pará Leilões',
+    category: 'Veículos',
+    isNew: true,
+    bidsCount: 27,
+    color: 'Azul',
+    year: '2019',
+    origem: 'Extrajudicial',
+    etapa: 'primeira',
+    vehicleType: 'carros',
+    formato: 'leilao',
+    appraisedValue: 190000
+  },
+  {
+    id: 'car-024',
+    title: 'Genesis G80 3.8 V6',
+    description: 'Sedan de luxo coreano com motor V6',
+    currentBid: 175000,
+    minimumBid: 170000,
+    endDate: new Date(Date.now() + 24 * 24 * 60 * 60 * 1000),
+    imageUrl: 'https://images.pexels.com/photos/1545743/pexels-photo-1545743.jpeg?auto=compress&cs=tinysrgb&w=800',
+    location: 'Macapá/AP',
+    site: 'Amapá Leilões',
+    category: 'Veículos',
+    isNew: false,
+    bidsCount: 21,
+    color: 'Branco',
+    year: '2020',
+    origem: 'Particular',
+    etapa: 'segunda',
+    vehicleType: 'carros',
+    formato: 'leilao',
+    appraisedValue: 210000
+  },
+  {
+    id: 'car-025',
+    title: 'Cadillac ATS 2.0 Turbo',
+    description: 'Sedan americano de luxo com motor turbo',
+    currentBid: 125000,
+    minimumBid: 120000,
+    endDate: new Date(Date.now() + 25 * 24 * 60 * 60 * 1000),
+    imageUrl: 'https://images.pexels.com/photos/544542/pexels-photo-544542.jpeg?auto=compress&cs=tinysrgb&w=800',
+    location: 'Boa Vista/RR',
+    site: 'Roraima Leilões',
+    category: 'Veículos',
+    isNew: true,
+    bidsCount: 17,
+    color: 'Preto',
+    year: '2018',
+    origem: 'Judicial',
+    etapa: 'primeira',
+    vehicleType: 'carros',
+    formato: 'leilao',
+    appraisedValue: 155000
+  },
+  {
+    id: 'car-026',
+    title: 'Lincoln MKZ Reserve AWD',
+    description: 'Sedan de luxo americano com tração integral',
+    currentBid: 145000,
+    minimumBid: 140000,
+    endDate: new Date(Date.now() + 26 * 24 * 60 * 60 * 1000),
+    imageUrl: 'https://images.pexels.com/photos/1719648/pexels-photo-1719648.jpeg?auto=compress&cs=tinysrgb&w=800',
+    location: 'Rio Branco/AC',
+    site: 'Acre Leilões',
+    category: 'Veículos',
+    isNew: false,
+    bidsCount: 20,
+    color: 'Cinza',
+    year: '2019',
+    origem: 'Extrajudicial',
+    etapa: 'terceira',
+    vehicleType: 'carros',
+    formato: 'leilao',
+    appraisedValue: 180000
+  },
+  {
+    id: 'car-027',
+    title: 'Acura TLX A-Spec SH-AWD',
+    description: 'Sedan esportivo japonês com tração integral',
+    currentBid: 165000,
+    minimumBid: 160000,
+    endDate: new Date(Date.now() + 27 * 24 * 60 * 60 * 1000),
+    imageUrl: 'https://images.pexels.com/photos/3802510/pexels-photo-3802510.jpeg?auto=compress&cs=tinysrgb&w=800',
+    location: 'Palmas/TO',
+    site: 'Tocantins Leilões',
+    category: 'Veículos',
+    isNew: true,
+    bidsCount: 23,
+    color: 'Vermelho',
+    year: '2020',
+    origem: 'Particular',
+    etapa: 'primeira',
+    vehicleType: 'carros',
+    formato: 'leilao',
+    appraisedValue: 200000
+  },
+  {
+    id: 'car-028',
+    title: 'Alfa Romeo Giulia Veloce',
+    description: 'Sedan esportivo italiano com motor turbo',
+    currentBid: 185000,
+    minimumBid: 180000,
+    endDate: new Date(Date.now() + 28 * 24 * 60 * 60 * 1000),
+    imageUrl: 'https://images.pexels.com/photos/544542/pexels-photo-544542.jpeg?auto=compress&cs=tinysrgb&w=800',
+    location: 'Porto Velho/RO',
+    site: 'Rondônia Leilões',
+    category: 'Veículos',
+    isNew: false,
+    bidsCount: 29,
+    color: 'Azul',
+    year: '2021',
+    origem: 'Judicial',
+    etapa: 'segunda',
+    vehicleType: 'carros',
+    formato: 'leilao',
+    appraisedValue: 225000
+  },
+  {
+    id: 'car-029',
+    title: 'Jaguar XE R-Dynamic SE',
+    description: 'Sedan britânico de luxo com design elegante',
+    currentBid: 195000,
+    minimumBid: 190000,
+    endDate: new Date(Date.now() + 29 * 24 * 60 * 60 * 1000),
+    imageUrl: 'https://images.pexels.com/photos/1719648/pexels-photo-1719648.jpeg?auto=compress&cs=tinysrgb&w=800',
+    location: 'São Paulo/SP',
+    site: 'Elite Leilões SP',
+    category: 'Veículos',
+    isNew: true,
+    bidsCount: 32,
+    color: 'Prata',
+    year: '2020',
+    origem: 'Extrajudicial',
+    etapa: 'primeira',
+    vehicleType: 'carros',
+    formato: 'leilao',
+    appraisedValue: 240000
+  },
+  {
+    id: 'car-030',
+    title: 'Maserati Ghibli S Q4',
+    description: 'Sedan italiano de luxo com motor V6 biturbo',
+    currentBid: 285000,
+    minimumBid: 280000,
+    endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+    imageUrl: 'https://images.pexels.com/photos/544542/pexels-photo-544542.jpeg?auto=compress&cs=tinysrgb&w=800',
+    location: 'Rio de Janeiro/RJ',
+    site: 'Luxury Leilões RJ',
+    category: 'Veículos',
+    isNew: false,
+    bidsCount: 35,
+    color: 'Preto',
+    year: '2019',
+    origem: 'Particular',
+    etapa: 'terceira',
+    vehicleType: 'carros',
+    formato: 'leilao',
+    appraisedValue: 350000
+  },
+  // NOVOS 20 CARROS ADICIONADOS
+  {
+    id: 'car-031',
+    title: 'Tesla Model 3 Performance',
+    description: 'Sedan elétrico com autopilot e alta performance',
+    currentBid: 225000,
+    minimumBid: 220000,
+    endDate: new Date(Date.now() + 31 * 24 * 60 * 60 * 1000),
+    imageUrl: 'https://images.pexels.com/photos/1545743/pexels-photo-1545743.jpeg?auto=compress&cs=tinysrgb&w=800',
+    location: 'Belo Horizonte/MG',
+    site: 'Tech Leilões MG',
+    category: 'Veículos',
+    isNew: true,
+    bidsCount: 38,
+    color: 'Branco',
+    year: '2022',
+    origem: 'Judicial',
+    etapa: 'primeira',
+    vehicleType: 'carros',
+    formato: 'leilao',
+    appraisedValue: 280000
+  },
+  {
+    id: 'car-032',
+    title: 'Porsche Panamera 4S',
+    description: 'Sedan esportivo alemão de alta performance',
+    currentBid: 385000,
+    minimumBid: 380000,
+    endDate: new Date(Date.now() + 32 * 24 * 60 * 60 * 1000),
+    imageUrl: 'https://images.pexels.com/photos/544542/pexels-photo-544542.jpeg?auto=compress&cs=tinysrgb&w=800',
+    location: 'Curitiba/PR',
+    site: 'Premium Leilões PR',
+    category: 'Veículos',
+    isNew: false,
+    bidsCount: 42,
+    color: 'Cinza',
+    year: '2020',
+    origem: 'Extrajudicial',
+    etapa: 'segunda',
+    vehicleType: 'carros',
+    formato: 'leilao',
+    appraisedValue: 480000
+  },
+  {
+    id: 'car-033',
+    title: 'Ferrari 488 GTB',
+    description: 'Supercar italiano com motor V8 biturbo',
+    currentBid: 1250000,
+    minimumBid: 1200000,
+    endDate: new Date(Date.now() + 33 * 24 * 60 * 60 * 1000),
+    imageUrl: 'https://images.pexels.com/photos/544542/pexels-photo-544542.jpeg?auto=compress&cs=tinysrgb&w=800',
+    location: 'São Paulo/SP',
+    site: 'Exotic Leilões',
+    category: 'Veículos',
+    isNew: true,
+    bidsCount: 65,
+    color: 'Vermelho',
+    year: '2019',
+    origem: 'Particular',
+    etapa: 'primeira',
+    vehicleType: 'carros',
+    formato: 'leilao',
+    appraisedValue: 1500000
+  },
+  {
+    id: 'car-034',
+    title: 'Lamborghini Huracán LP 610-4',
+    description: 'Supercar italiano com tração integral',
+    currentBid: 980000,
+    minimumBid: 950000,
+    endDate: new Date(Date.now() + 34 * 24 * 60 * 60 * 1000),
+    imageUrl: 'https://images.pexels.com/photos/1719648/pexels-photo-1719648.jpeg?auto=compress&cs=tinysrgb&w=800',
+    location: 'Rio de Janeiro/RJ',
+    site: 'Supercar Leilões',
+    category: 'Veículos',
+    isNew: false,
+    bidsCount: 58,
+    color: 'Amarelo',
+    year: '2018',
+    origem: 'Judicial',
+    etapa: 'terceira',
+    vehicleType: 'carros',
+    formato: 'leilao',
+    appraisedValue: 1200000
+  },
+  {
+    id: 'car-035',
+    title: 'McLaren 570S Spider',
+    description: 'Supercar conversível britânico',
+    currentBid: 850000,
+    minimumBid: 820000,
+    endDate: new Date(Date.now() + 35 * 24 * 60 * 60 * 1000),
+    imageUrl: 'https://images.pexels.com/photos/3802510/pexels-photo-3802510.jpeg?auto=compress&cs=tinysrgb&w=800',
+    location: 'Brasília/DF',
+    site: 'Capital Exotics',
+    category: 'Veículos',
+    isNew: true,
+    bidsCount: 47,
+    color: 'Laranja',
+    year: '2020',
+    origem: 'Extrajudicial',
+    etapa: 'primeira',
+    vehicleType: 'carros',
+    formato: 'leilao',
+    appraisedValue: 1050000
+  },
+  {
+    id: 'car-036',
+    title: 'Aston Martin DB11 V8',
+    description: 'Gran turismo britânico de luxo',
+    currentBid: 720000,
+    minimumBid: 700000,
+    endDate: new Date(Date.now() + 36 * 24 * 60 * 60 * 1000),
+    imageUrl: 'https://images.pexels.com/photos/1545743/pexels-photo-1545743.jpeg?auto=compress&cs=tinysrgb&w=800',
+    location: 'Porto Alegre/RS',
+    site: 'Luxury Cars RS',
+    category: 'Veículos',
+    isNew: false,
+    bidsCount: 39,
+    color: 'Verde',
+    year: '2019',
+    origem: 'Particular',
+    etapa: 'segunda',
+    vehicleType: 'carros',
+    formato: 'leilao',
+    appraisedValue: 900000
+  },
+  {
+    id: 'car-037',
+    title: 'Bentley Continental GT',
+    description: 'Coupé de luxo britânico com motor W12',
+    currentBid: 650000,
+    minimumBid: 630000,
+    endDate: new Date(Date.now() + 37 * 24 * 60 * 60 * 1000),
+    imageUrl: 'https://images.pexels.com/photos/1719648/pexels-photo-1719648.jpeg?auto=compress&cs=tinysrgb&w=800',
+    location: 'Salvador/BA',
+    site: 'Bahia Luxury',
+    category: 'Veículos',
+    isNew: true,
+    bidsCount: 33,
+    color: 'Azul',
+    year: '2020',
+    origem: 'Judicial',
+    etapa: 'primeira',
+    vehicleType: 'carros',
+    formato: 'leilao',
+    appraisedValue: 800000
+  },
+  {
+    id: 'car-038',
+    title: 'Rolls-Royce Ghost',
+    description: 'Sedan de ultra luxo britânico',
+    currentBid: 1450000,
+    minimumBid: 1400000,
+    endDate: new Date(Date.now() + 38 * 24 * 60 * 60 * 1000),
+    imageUrl: 'https://images.pexels.com/photos/544542/pexels-photo-544542.jpeg?auto=compress&cs=tinysrgb&w=800',
+    location: 'Campinas/SP',
+    site: 'Ultra Luxury Auctions',
+    category: 'Veículos',
+    isNew: false,
+    bidsCount: 71,
+    color: 'Preto',
+    year: '2021',
+    origem: 'Extrajudicial',
+    etapa: 'terceira',
+    vehicleType: 'carros',
+    formato: 'leilao',
+    appraisedValue: 1800000
+  },
+  {
+    id: 'car-039',
+    title: 'Bugatti Chiron Sport',
+    description: 'Hypercar francês com 1500 cavalos',
+    currentBid: 12500000,
+    minimumBid: 12000000,
+    endDate: new Date(Date.now() + 39 * 24 * 60 * 60 * 1000),
+    imageUrl: 'https://images.pexels.com/photos/3802510/pexels-photo-3802510.jpeg?auto=compress&cs=tinysrgb&w=800',
+    location: 'São Paulo/SP',
+    site: 'Hypercar Collection',
+    category: 'Veículos',
+    isNew: true,
+    bidsCount: 125,
+    color: 'Azul',
+    year: '2020',
+    origem: 'Particular',
+    etapa: 'primeira',
+    vehicleType: 'carros',
+    formato: 'leilao',
+    appraisedValue: 15000000
+  },
+  {
+    id: 'car-040',
+    title: 'Koenigsegg Regera',
+    description: 'Hypercar sueco híbrido de 1500 hp',
+    currentBid: 8500000,
+    minimumBid: 8200000,
+    endDate: new Date(Date.now() + 40 * 24 * 60 * 60 * 1000),
+    imageUrl: 'https://images.pexels.com/photos/1545743/pexels-photo-1545743.jpeg?auto=compress&cs=tinysrgb&w=800',
+    location: 'Rio de Janeiro/RJ',
+    site: 'Nordic Supercars',
+    category: 'Veículos',
+    isNew: false,
+    bidsCount: 89,
+    color: 'Prata',
+    year: '2019',
+    origem: 'Judicial',
+    etapa: 'segunda',
+    vehicleType: 'carros',
+    formato: 'leilao',
+    appraisedValue: 10500000
+  },
+  {
+    id: 'car-041',
+    title: 'Pagani Huayra BC',
+    description: 'Hypercar italiano artesanal',
+    currentBid: 6800000,
+    minimumBid: 6500000,
+    endDate: new Date(Date.now() + 41 * 24 * 60 * 60 * 1000),
+    imageUrl: 'https://images.pexels.com/photos/1719648/pexels-photo-1719648.jpeg?auto=compress&cs=tinysrgb&w=800',
+    location: 'Curitiba/PR',
+    site: 'Italian Masterpieces',
+    category: 'Veículos',
+    isNew: true,
+    bidsCount: 76,
+    color: 'Dourado',
+    year: '2018',
+    origem: 'Extrajudicial',
+    etapa: 'primeira',
+    vehicleType: 'carros',
+    formato: 'leilao',
+    appraisedValue: 8200000
+  },
+  {
+    id: 'car-042',
+    title: 'Ford GT Heritage Edition',
+    description: 'Supercar americano edição limitada',
+    currentBid: 1850000,
+    minimumBid: 1800000,
+    endDate: new Date(Date.now() + 42 * 24 * 60 * 60 * 1000),
+    imageUrl: 'https://images.pexels.com/photos/544542/pexels-photo-544542.jpeg?auto=compress&cs=tinysrgb&w=800',
+    location: 'Goiânia/GO',
+    site: 'American Legends',
+    category: 'Veículos',
+    isNew: false,
+    bidsCount: 54,
+    color: 'Azul',
+    year: '2020',
+    origem: 'Particular',
+    etapa: 'terceira',
+    vehicleType: 'carros',
+    formato: 'leilao',
+    appraisedValue: 2300000
+  },
+  {
+    id: 'car-043',
+    title: 'Chevrolet Corvette Z06',
+    description: 'Supercar americano com motor V8 supercharged',
+    currentBid: 485000,
+    minimumBid: 470000,
+    endDate: new Date(Date.now() + 43 * 24 * 60 * 60 * 1000),
+    imageUrl: 'https://images.pexels.com/photos/3802510/pexels-photo-3802510.jpeg?auto=compress&cs=tinysrgb&w=800',
+    location: 'Fortaleza/CE',
+    site: 'Muscle Car Brasil',
+    category: 'Veículos',
+    isNew: true,
+    bidsCount: 41,
+    color: 'Amarelo',
+    year: '2021',
+    origem: 'Judicial',
+    etapa: 'primeira',
+    vehicleType: 'carros',
+    formato: 'leilao',
+    appraisedValue: 620000
+  },
+  {
+    id: 'car-044',
+    title: 'Dodge Challenger SRT Hellcat',
+    description: 'Muscle car americano com 717 cavalos',
+    currentBid: 385000,
+    minimumBid: 370000,
+    endDate: new Date(Date.now() + 44 * 24 * 60 * 60 * 1000),
+    imageUrl: 'https://images.pexels.com/photos/1545743/pexels-photo-1545743.jpeg?auto=compress&cs=tinysrgb&w=800',
+    location: 'Recife/PE',
+    site: 'Hellcat Auctions',
+    category: 'Veículos',
+    isNew: false,
+    bidsCount: 36,
+    color: 'Preto',
+    year: '2019',
+    origem: 'Extrajudicial',
+    etapa: 'segunda',
+    vehicleType: 'carros',
+    formato: 'leilao',
+    appraisedValue: 480000
+  },
+  {
+    id: 'car-045',
+    title: 'Shelby GT500 Mustang',
+    description: 'Muscle car americano de alta performance',
+    currentBid: 425000,
+    minimumBid: 410000,
+    endDate: new Date(Date.now() + 45 * 24 * 60 * 60 * 1000),
+    imageUrl: 'https://images.pexels.com/photos/1719648/pexels-photo-1719648.jpeg?auto=compress&cs=tinysrgb&w=800',
+    location: 'Manaus/AM',
+    site: 'Shelby Collection',
+    category: 'Veículos',
+    isNew: true,
+    bidsCount: 48,
+    color: 'Branco',
+    year: '2020',
+    origem: 'Particular',
+    etapa: 'primeira',
+    vehicleType: 'carros',
+    formato: 'leilao',
+    appraisedValue: 550000
+  },
+  {
+    id: 'car-046',
+    title: 'Camaro ZL1 1LE',
+    description: 'Muscle car americano track-focused',
+    currentBid: 365000,
+    minimumBid: 350000,
+    endDate: new Date(Date.now() + 46 * 24 * 60 * 60 * 1000),
+    imageUrl: 'https://images.pexels.com/photos/544542/pexels-photo-544542.jpeg?auto=compress&cs=tinysrgb&w=800',
+    location: 'Florianópolis/SC',
+    site: 'Track Masters',
+    category: 'Veículos',
+    isNew: false,
+    bidsCount: 32,
+    color: 'Vermelho',
+    year: '2021',
+    origem: 'Judicial',
+    etapa: 'terceira',
+    vehicleType: 'carros',
+    formato: 'leilao',
+    appraisedValue: 450000
+  },
+  {
+    id: 'car-047',
+    title: 'Nissan GT-R Nismo',
+    description: 'Supercar japonês de alta performance',
+    currentBid: 685000,
+    minimumBid: 670000,
+    endDate: new Date(Date.now() + 47 * 24 * 60 * 60 * 1000),
+    imageUrl: 'https://images.pexels.com/photos/3802510/pexels-photo-3802510.jpeg?auto=compress&cs=tinysrgb&w=800',
+    location: 'Vitória/ES',
+    site: 'JDM Legends',
+    category: 'Veículos',
+    isNew: true,
+    bidsCount: 52,
+    color: 'Cinza',
+    year: '2020',
+    origem: 'Extrajudicial',
+    etapa: 'primeira',
+    vehicleType: 'carros',
+    formato: 'leilao',
+    appraisedValue: 850000
+  },
+  {
+    id: 'car-048',
+    title: 'Honda NSX Type S',
+    description: 'Supercar híbrido japonês',
+    currentBid: 785000,
+    minimumBid: 760000,
+    endDate: new Date(Date.now() + 48 * 24 * 60 * 60 * 1000),
+    imageUrl: 'https://images.pexels.com/photos/1545743/pexels-photo-1545743.jpeg?auto=compress&cs=tinysrgb&w=800',
+    location: 'Campo Grande/MS',
+    site: 'Honda Performance',
+    category: 'Veículos',
+    isNew: false,
+    bidsCount: 44,
+    color: 'Azul',
+    year: '2022',
+    origem: 'Particular',
+    etapa: 'segunda',
+    vehicleType: 'carros',
+    formato: 'leilao',
+    appraisedValue: 980000
+  },
+  {
+    id: 'car-049',
+    title: 'Lexus LFA Nürburgring',
+    description: 'Supercar japonês edição limitada',
+    currentBid: 2850000,
+    minimumBid: 2800000,
+    endDate: new Date(Date.now() + 49 * 24 * 60 * 60 * 1000),
+    imageUrl: 'https://images.pexels.com/photos/1719648/pexels-photo-1719648.jpeg?auto=compress&cs=tinysrgb&w=800',
+    location: 'Cuiabá/MT',
+    site: 'Rare Supercars',
+    category: 'Veículos',
+    isNew: true,
+    bidsCount: 98,
+    color: 'Laranja',
+    year: '2012',
+    origem: 'Judicial',
+    etapa: 'primeira',
+    vehicleType: 'carros',
+    formato: 'leilao',
+    appraisedValue: 3500000
+  },
+  {
+    id: 'car-050',
+    title: 'Toyota Supra A90 3.0',
+    description: 'Coupé esportivo japonês moderno',
+    currentBid: 285000,
+    minimumBid: 275000,
+    endDate: new Date(Date.now() + 50 * 24 * 60 * 60 * 1000),
+    imageUrl: 'https://images.pexels.com/photos/544542/pexels-photo-544542.jpeg?auto=compress&cs=tinysrgb&w=800',
+    location: 'João Pessoa/PB',
+    site: 'Supra Nation',
+    category: 'Veículos',
+    isNew: false,
+    bidsCount: 29,
+    color: 'Amarelo',
+    year: '2021',
+    origem: 'Extrajudicial',
+    etapa: 'terceira',
+    vehicleType: 'carros',
+    formato: 'leilao',
+    appraisedValue: 350000
+  },
 
-// FIXED: Mapeamento de etapas para traduzir valores dos filtros para valores dos dados mock
-const etapaMapping: Record<string, string> = {
-  'primeira': '1ª Praça',
-  'segunda': '2ª Praça',
-  'terceira': '3ª Praça',
-  'praca-unica': 'Praça única'
-};
+  // VEÍCULOS - MOTOS
+  {
+    id: 'moto-001',
+    title: 'Honda CB 600F Hornet',
+    description: 'Naked esportiva com motor 600cc',
+    currentBid: 18000,
+    minimumBid: 16000,
+    endDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
+    imageUrl: 'https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg?auto=compress&cs=tinysrgb&w=800',
+    location: 'São Paulo/SP',
+    site: 'Moto Leilões',
+    category: 'Veículos',
+    isNew: true,
+    bidsCount: 8,
+    color: 'Vermelha',
+    year: '2019',
+    origem: 'Judicial',
+    etapa: 'primeira',
+    vehicleType: 'motos',
+    formato: 'leilao',
+    appraisedValue: 22000
+  },
+  {
+    id: 'moto-002',
+    title: 'Yamaha MT-07',
+    description: 'Naked moderna com motor bicilíndrico',
+    currentBid: 25000,
+    minimumBid: 23000,
+    endDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
+    imageUrl: 'https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg?auto=compress&cs=tinysrgb&w=800',
+    location: 'Rio de Janeiro/RJ',
+    site: 'Yamaha Auctions',
+    category: 'Veículos',
+    isNew: false,
+    bidsCount: 12,
+    color: 'Azul',
+    year: '2020',
+    origem: 'Extrajudicial',
+    etapa: 'segunda',
+    vehicleType: 'motos',
+    formato: 'leilao',
+    appraisedValue: 30000
+  },
 
-// Generate more mock data to demonstrate pagination
-const generateMockVeiculos = (): Auction[] => {
-  const baseVeiculos = [
-    {
-      id: '1',
-      title: 'BMW X5 2018',
-      description: 'Estado de Conservação Excelente',
-      currentBid: 180000,
-      minimumBid: 150000,
-      endDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
-      imageUrl: 'https://images.pexels.com/photos/3972755/pexels-photo-3972755.jpeg?auto=compress&cs=tinysrgb&w=600',
-      location: 'São Paulo/SP',
-      site: 'SuperLeilões',
-      category: 'Veículos',
-      isNew: true,
-      bidsCount: 23,
-      color: 'Preto',
-      year: '2018',
-      origem: 'Judicial',
-      etapa: '1ª Praça',
-      vehicleType: normalizeVehicleType('carros'),
-      formato: 'leilao',
-      appraisedValue: 220000
-    },
-    {
-      id: '2',
-      title: 'Honda Civic 2020',
-      description: 'Único Dono',
-      currentBid: 95000,
-      minimumBid: 85000,
-      endDate: new Date(Date.now() + 8 * 24 * 60 * 60 * 1000),
-      imageUrl: 'https://images.pexels.com/photos/3729464/pexels-photo-3729464.jpeg?auto=compress&cs=tinysrgb&w=600',
-      location: 'Brasília/DF',
-      site: 'Leilões Online',
-      category: 'Veículos',
-      bidsCount: 41,
-      color: 'Prata',
-      year: '2020',
-      origem: 'Extrajudicial',
-      etapa: '2ª Praça',
-      vehicleType: normalizeVehicleType('carros'),
-      formato: 'venda-direta',
-      appraisedValue: 110000
-    },
-    {
-      id: '3',
-      title: 'Toyota Corolla 2019',
-      description: 'Automático',
-      currentBid: 78000,
-      minimumBid: 70000,
-      endDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
-      imageUrl: 'https://images.pexels.com/photos/1719648/pexels-photo-1719648.jpeg?auto=compress&cs=tinysrgb&w=600',
-      location: 'Rio de Janeiro/RJ',
-      site: 'Lance Certo',
-      category: 'Veículos',
-      isNew: true,
-      bidsCount: 56,
-      color: 'Branco',
-      year: '2019',
-      origem: 'Particular',
-      etapa: 'Praça única',
-      vehicleType: normalizeVehicleType('carros'),
-      formato: 'leilao',
-      appraisedValue: 95000
-    },
-    {
-      id: '4',
-      title: 'Volkswagen Tiguan 2017',
-      description: 'SUV Completo',
-      currentBid: 125000,
-      minimumBid: 110000,
-      endDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
-      imageUrl: 'https://images.pexels.com/photos/1592384/pexels-photo-1592384.jpeg?auto=compress&cs=tinysrgb&w=600',
-      location: 'Curitiba/PR',
-      site: 'Mega Leilões',
-      category: 'Veículos',
-      bidsCount: 34,
-      color: 'Azul',
-      year: '2017',
-      origem: 'Público',
-      etapa: '3ª Praça',
-      vehicleType: normalizeVehicleType('carros'),
-      formato: 'leilao',
-      appraisedValue: 150000
-    }
-  ];
+  // VEÍCULOS - CAMINHÕES
+  {
+    id: 'caminhao-001',
+    title: 'Scania R 440 6x2',
+    description: 'Cavalo mecânico para transporte pesado',
+    currentBid: 185000,
+    minimumBid: 180000,
+    endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    imageUrl: 'https://images.pexels.com/photos/1118448/pexels-photo-1118448.jpeg?auto=compress&cs=tinysrgb&w=800',
+    location: 'São Paulo/SP',
+    site: 'Truck Leilões',
+    category: 'Veículos',
+    isNew: true,
+    bidsCount: 15,
+    color: 'Branco',
+    year: '2018',
+    origem: 'Judicial',
+    etapa: 'primeira',
+    vehicleType: 'caminhoes',
+    formato: 'leilao',
+    appraisedValue: 220000
+  },
 
-  // Generate additional vehicles to reach 100+ items
-  const additionalVeiculos: Auction[] = [];
-  const carBrands = ['Toyota', 'Honda', 'Volkswagen', 'Ford', 'Chevrolet', 'Hyundai', 'Nissan', 'Fiat', 'Renault', 'Peugeot'];
-  const carModels = ['Sedan', 'Hatch', 'SUV', 'Pickup', 'Crossover'];
-  const colors = ['Preto', 'Branco', 'Prata', 'Azul', 'Vermelho', 'Cinza'];
-  const locations = ['São Paulo/SP', 'Rio de Janeiro/RJ', 'Belo Horizonte/MG', 'Brasília/DF', 'Curitiba/PR', 'Porto Alegre/RS'];
-  const sites = ['SuperLeilões', 'Leilões Online', 'Lance Certo', 'Mega Leilões', 'Sodré Santoro', 'Frazão Leilões'];
-  const origens = ['Judicial', 'Extrajudicial', 'Particular', 'Público'];
-  const etapas = ['Praça única', '1ª Praça', '2ª Praça', '3ª Praça'];
-  const vehicleTypes = ['carros', 'motos', 'caminhoes', 'embarcacoes', 'maquinas', 'onibus', 'apoio', 'recreativos'];
-  const formatos = ['leilao', 'venda-direta'];
-  const images = [
-    'https://images.pexels.com/photos/3972755/pexels-photo-3972755.jpeg?auto=compress&cs=tinysrgb&w=600',
-    'https://images.pexels.com/photos/3729464/pexels-photo-3729464.jpeg?auto=compress&cs=tinysrgb&w=600',
-    'https://images.pexels.com/photos/1719648/pexels-photo-1719648.jpeg?auto=compress&cs=tinysrgb&w=600',
-    'https://images.pexels.com/photos/1592384/pexels-photo-1592384.jpeg?auto=compress&cs=tinysrgb&w=600',
-    'https://images.pexels.com/photos/2365572/pexels-photo-2365572.jpeg?auto=compress&cs=tinysrgb&w=600',
-    'https://images.pexels.com/photos/1545743/pexels-photo-1545743.jpeg?auto=compress&cs=tinysrgb&w=600'
-  ];
+  // IMÓVEIS - APARTAMENTOS
+  {
+    id: 'apt-001',
+    title: 'Apartamento 3 quartos',
+    description: 'Apartamento com 3 quartos, 2 banheiros e varanda',
+    currentBid: 280000,
+    minimumBid: 250000,
+    endDate: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000),
+    imageUrl: 'https://images.pexels.com/photos/1396122/pexels-photo-1396122.jpeg?auto=compress&cs=tinysrgb&w=800',
+    location: 'São Paulo/SP',
+    site: 'Imóvel Leilões',
+    category: 'Imóveis',
+    isNew: true,
+    bidsCount: 18,
+    origem: 'Judicial',
+    etapa: 'primeira',
+    propertyType: 'apartamentos',
+    formato: 'leilao',
+    appraisedValue: 350000
+  },
+  {
+    id: 'apt-002',
+    title: 'Apartamento 2 quartos',
+    description: 'Apartamento compacto com 2 quartos e 1 banheiro',
+    currentBid: 180000,
+    minimumBid: 160000,
+    endDate: new Date(Date.now() + 6 * 24 * 60 * 60 * 1000),
+    imageUrl: 'https://images.pexels.com/photos/1396122/pexels-photo-1396122.jpeg?auto=compress&cs=tinysrgb&w=800',
+    location: 'Rio de Janeiro/RJ',
+    site: 'RJ Imóveis',
+    category: 'Imóveis',
+    isNew: false,
+    bidsCount: 12,
+    origem: 'Extrajudicial',
+    etapa: 'segunda',
+    propertyType: 'apartamentos',
+    formato: 'leilao',
+    appraisedValue: 220000
+  },
 
-  for (let i = 5; i <= 100; i++) {
-    const brand = carBrands[Math.floor(Math.random() * carBrands.length)];
-    const model = carModels[Math.floor(Math.random() * carModels.length)];
-    const year = (2015 + Math.floor(Math.random() * 9)).toString();
-    const color = colors[Math.floor(Math.random() * colors.length)];
-    const price = 30000 + Math.floor(Math.random() * 200000);
-    const km = 10000 + Math.floor(Math.random() * 100000);
-    const vehicleType = vehicleTypes[Math.floor(Math.random() * vehicleTypes.length)];
-    const formato = formatos[Math.floor(Math.random() * formatos.length)];
-    const appraisedValue = Math.random() > 0.3 ? price + Math.floor(Math.random() * 50000) : undefined;
-    
-    additionalVeiculos.push({
-      id: i.toString(),
-      title: `${brand} ${model} ${year}`,
-      description: `${km.toLocaleString('pt-BR')} km`,
-      currentBid: price,
-      minimumBid: Math.floor(price * 0.8),
-      endDate: new Date(Date.now() + Math.floor(Math.random() * 10) * 24 * 60 * 60 * 1000),
-      imageUrl: images[Math.floor(Math.random() * images.length)],
-      location: locations[Math.floor(Math.random() * locations.length)],
-      site: sites[Math.floor(Math.random() * sites.length)],
-      category: 'Veículos',
-      isNew: Math.random() > 0.8,
-      bidsCount: Math.floor(Math.random() * 100) + 1,
-      color,
-      year,
-      origem: origens[Math.floor(Math.random() * origens.length)],
-      etapa: etapas[Math.floor(Math.random() * etapas.length)],
-      vehicleType: normalizeVehicleType(vehicleType),
-      formato,
-      appraisedValue
-    });
+  // IMÓVEIS - CASAS
+  {
+    id: 'casa-001',
+    title: 'Casa 4 quartos',
+    description: 'Casa térrea com 4 quartos, 3 banheiros e quintal',
+    currentBid: 420000,
+    minimumBid: 400000,
+    endDate: new Date(Date.now() + 8 * 24 * 60 * 60 * 1000),
+    imageUrl: 'https://images.pexels.com/photos/106399/pexels-photo-106399.jpeg?auto=compress&cs=tinysrgb&w=800',
+    location: 'Belo Horizonte/MG',
+    site: 'Casa Leilões',
+    category: 'Imóveis',
+    isNew: true,
+    bidsCount: 22,
+    origem: 'Particular',
+    etapa: 'primeira',
+    propertyType: 'casas',
+    formato: 'leilao',
+    appraisedValue: 520000
+  },
+
+  // IMÓVEIS - TERRENOS
+  {
+    id: 'terreno-001',
+    title: 'Terreno 500m²',
+    description: 'Terreno plano em área residencial',
+    currentBid: 150000,
+    minimumBid: 140000,
+    endDate: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000),
+    imageUrl: 'https://images.pexels.com/photos/259588/pexels-photo-259588.jpeg?auto=compress&cs=tinysrgb&w=800',
+    location: 'Curitiba/PR',
+    site: 'Terreno Auctions',
+    category: 'Imóveis',
+    isNew: false,
+    bidsCount: 8,
+    origem: 'Judicial',
+    etapa: 'terceira',
+    propertyType: 'terrenos-e-lotes',
+    formato: 'leilao',
+    appraisedValue: 180000
   }
-
-  return [...baseVeiculos, ...additionalVeiculos];
-};
-
-const generateMockImoveis = (): Auction[] => {
-  const baseImoveis = [
-    {
-      id: '101',
-      title: 'Apartamento 3 Quartos',
-      description: 'Vista Mar Copacabana',
-      currentBid: 850000,
-      minimumBid: 800000,
-      endDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
-      imageUrl: 'https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=600',
-      location: 'Rio de Janeiro/RJ',
-      site: 'Leilões BR',
-      category: 'Imóveis',
-      bidsCount: 45,
-      origem: 'Judicial',
-      etapa: '1ª Praça',
-      propertyType: normalizePropertyType('apartamentos'),
-      formato: 'leilao',
-      appraisedValue: 1200000
-    },
-    {
-      id: '102',
-      title: 'Casa 4 Quartos',
-      description: 'Condomínio Fechado Alphaville',
-      currentBid: 1200000,
-      minimumBid: 1100000,
-      endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-      imageUrl: 'https://images.pexels.com/photos/1396122/pexels-photo-1396122.jpeg?auto=compress&cs=tinysrgb&w=600',
-      location: 'São Paulo/SP',
-      site: 'Sodré Santoro',
-      category: 'Imóveis',
-      isNew: true,
-      bidsCount: 67,
-      origem: 'Extrajudicial',
-      etapa: '2ª Praça',
-      propertyType: normalizePropertyType('casas'),
-      formato: 'venda-direta',
-      appraisedValue: 1500000
-    },
-    {
-      id: '103',
-      title: 'Cobertura Duplex',
-      description: 'Barra da Tijuca',
-      currentBid: 1800000,
-      minimumBid: 1600000,
-      endDate: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000),
-      imageUrl: 'https://images.pexels.com/photos/1643383/pexels-photo-1643383.jpeg?auto=compress&cs=tinysrgb&w=600',
-      location: 'Rio de Janeiro/RJ',
-      site: 'Frazão Leilões',
-      category: 'Imóveis',
-      bidsCount: 89,
-      origem: 'Particular',
-      etapa: 'Praça única',
-      propertyType: normalizePropertyType('apartamentos'),
-      formato: 'leilao',
-      appraisedValue: 2200000
-    },
-    {
-      id: '104',
-      title: 'Apartamento Studio',
-      description: 'Vila Madalena',
-      currentBid: 420000,
-      minimumBid: 380000,
-      endDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
-      imageUrl: 'https://images.pexels.com/photos/2029667/pexels-photo-2029667.jpeg?auto=compress&cs=tinysrgb&w=600',
-      location: 'São Paulo/SP',
-      site: 'Zukerman',
-      category: 'Imóveis',
-      isNew: true,
-      bidsCount: 23,
-      origem: 'Público',
-      etapa: '3ª Praça',
-      propertyType: normalizePropertyType('compactos'),
-      formato: 'leilao'
-    }
-  ];
-
-  // Generate additional properties
-  const additionalImoveis: Auction[] = [];
-  const propertyTypes = ['apartamentos', 'casas', 'comerciais', 'compactos', 'condominios', 'galpoes', 'terrenos-e-lotes'];
-  const neighborhoods = ['Copacabana', 'Ipanema', 'Vila Madalena', 'Moema', 'Leblon', 'Barra da Tijuca', 'Alphaville', 'Jardins'];
-  const locations = ['São Paulo/SP', 'Rio de Janeiro/RJ', 'Belo Horizonte/MG', 'Brasília/DF', 'Curitiba/PR', 'Porto Alegre/RS'];
-  const sites = ['Leilões BR', 'Sodré Santoro', 'Frazão Leilões', 'Zukerman', 'SuperLeilões', 'Mega Leilões'];
-  const origens = ['Judicial', 'Extrajudicial', 'Particular', 'Público'];
-  const etapas = ['Praça única', '1ª Praça', '2ª Praça', '3ª Praça'];
-  const formatos = ['leilao', 'venda-direta'];
-  const images = [
-    'https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=600',
-    'https://images.pexels.com/photos/1396122/pexels-photo-1396122.jpeg?auto=compress&cs=tinysrgb&w=600',
-    'https://images.pexels.com/photos/1643383/pexels-photo-1643383.jpeg?auto=compress&cs=tinysrgb&w=600',
-    'https://images.pexels.com/photos/2029667/pexels-photo-2029667.jpeg?auto=compress&cs=tinysrgb&w=600',
-    'https://images.pexels.com/photos/1571453/pexels-photo-1571453.jpeg?auto=compress&cs=tinysrgb&w=600',
-    'https://images.pexels.com/photos/1643384/pexels-photo-1643384.jpeg?auto=compress&cs=tinysrgb&w=600'
-  ];
-
-  for (let i = 105; i <= 200; i++) {
-    const propertyType = propertyTypes[Math.floor(Math.random() * propertyTypes.length)];
-    const neighborhood = neighborhoods[Math.floor(Math.random() * neighborhoods.length)];
-    const rooms = Math.floor(Math.random() * 4) + 1;
-    const price = 200000 + Math.floor(Math.random() * 2000000);
-    const area = 40 + Math.floor(Math.random() * 200);
-    const formato = formatos[Math.floor(Math.random() * formatos.length)];
-    const appraisedValue = Math.random() > 0.3 ? price + Math.floor(Math.random() * 500000) : undefined;
-    
-    additionalImoveis.push({
-      id: i.toString(),
-      title: `${propertyType === 'apartamentos' ? 'Apartamento' : propertyType === 'casas' ? 'Casa' : 'Imóvel'} ${rooms} Quartos`,
-      description: `${neighborhood}`,
-      currentBid: price,
-      minimumBid: Math.floor(price * 0.85),
-      endDate: new Date(Date.now() + Math.floor(Math.random() * 10) * 24 * 60 * 60 * 1000),
-      imageUrl: images[Math.floor(Math.random() * images.length)],
-      location: locations[Math.floor(Math.random() * locations.length)],
-      site: sites[Math.floor(Math.random() * sites.length)],
-      category: 'Imóveis',
-      isNew: Math.random() > 0.8,
-      bidsCount: Math.floor(Math.random() * 100) + 1,
-      origem: origens[Math.floor(Math.random() * origens.length)],
-      etapa: etapas[Math.floor(Math.random() * etapas.length)],
-      propertyType: normalizePropertyType(propertyType),
-      formato,
-      appraisedValue
-    });
-  }
-
-  return [...baseImoveis, ...additionalImoveis];
-};
-
-export const mockVeiculos = generateMockVeiculos();
-export const mockImoveis = generateMockImoveis();
-
-// Helper function to extract state from location
-const getStateFromLocation = (location: string): string => {
-  const parts = location.split('/');
-  return parts[1] || '';
-};
-
-// Helper function to extract city from location
-const getCityFromLocation = (location: string): string => {
-  const parts = location.split('/');
-  return parts[0] || '';
-};
-
-// Helper function to extract brand from title (for vehicles)
-const getBrandFromTitle = (title: string): string => {
-  return title.split(' ')[0]?.toLowerCase() || '';
-};
-
-// Helper function to extract model from title (for vehicles)
-const getModelFromTitle = (title: string): string => {
-  const parts = title.split(' ');
-  return parts.slice(1, -1).join(' ').toLowerCase() || '';
-};
+];
 
 // Filter and sort function
-export const getAuctionsByCategory = (
-  category: 'veiculos' | 'imoveis', 
-  type?: string,
-  filters?: any,
-  sortOption?: SortOption,
+export function getAuctionsByCategory(
+  category: Category,
+  type: string,
+  filters: any,
+  sortOption: SortOption,
   searchQuery?: string
-): Auction[] => {
-  let auctions = category === 'veiculos' ? mockVeiculos : mockImoveis;
-  
-  // Filter by type if specified
-  if (type && type !== 'todos') {
-    if (category === 'veiculos') {
-      auctions = auctions.filter(auction => auction.vehicleType === type);
-    } else {
-      auctions = auctions.filter(auction => auction.propertyType === type);
+): Auction[] {
+  let filtered = mockAuctions.filter(auction => {
+    // Filter by category
+    if (category === 'veiculos' && auction.category !== 'Veículos') return false;
+    if (category === 'imoveis' && auction.category !== 'Imóveis') return false;
+    
+    // Filter by type
+    if (type !== 'todos') {
+      if (category === 'veiculos' && auction.vehicleType !== type) return false;
+      if (category === 'imoveis' && auction.propertyType !== type) return false;
     }
-  }
-  
-  // Apply filters if provided
-  if (filters) {
-    auctions = auctions.filter(auction => {
-      // Estado filter
-      if (filters.estado && filters.estado !== "all" && getStateFromLocation(auction.location) !== filters.estado) {
-        return false;
+    
+    // Apply search filter
+    if (searchQuery && searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      const searchableText = [
+        auction.title,
+        auction.description,
+        auction.location,
+        auction.color,
+        auction.year,
+        auction.origem,
+        auction.etapa
+      ].join(' ').toLowerCase();
+      
+      if (!searchableText.includes(query)) return false;
+    }
+    
+    // Apply filters
+    if (filters.estado && filters.estado !== "all") {
+      const auctionState = auction.location.split('/')[1];
+      if (auctionState !== filters.estado) return false;
+    }
+    
+    if (filters.cidade && filters.cidade !== "all") {
+      const auctionCity = auction.location.split('/')[0];
+      if (auctionCity !== filters.cidade) return false;
+    }
+    
+    if (filters.formato && auction.formato !== filters.formato) return false;
+    
+    if (filters.origem && filters.origem.length > 0) {
+      if (!filters.origem.includes(auction.origem)) return false;
+    }
+    
+    if (filters.etapa && filters.etapa.length > 0) {
+      if (!filters.etapa.includes(auction.etapa)) return false;
+    }
+    
+    // Vehicle-specific filters
+    if (category === 'veiculos') {
+      if (filters.marca && filters.marca !== "all") {
+        // Extract brand from title (first word)
+        const brand = auction.title.split(' ')[0].toLowerCase();
+        if (brand !== filters.marca.toLowerCase()) return false;
       }
       
-      // Cidade filter
-      if (filters.cidade && filters.cidade !== "all" && getCityFromLocation(auction.location) !== filters.cidade) {
-        return false;
+      if (filters.modelo && filters.modelo !== "all") {
+        // Extract model from title (second word)
+        const model = auction.title.split(' ')[1]?.toLowerCase();
+        if (model !== filters.modelo.toLowerCase()) return false;
       }
       
-      // Formato filter
-      if (filters.formato && auction.formato !== filters.formato) {
-        return false;
+      if (filters.cor && filters.cor !== "all") {
+        if (auction.color?.toLowerCase() !== filters.cor.toLowerCase()) return false;
       }
       
-      // Origem filter (multiple selection) - FIXED: Use improved normalization
-      if (filters.origem && Array.isArray(filters.origem) && filters.origem.length > 0) {
-        if (!auction.origem) {
-          return false;
-        }
-        
-        const normalizedAuctionOrigem = normalizeString(auction.origem);
-        const normalizedFilterOrigens = filters.origem.map((filterOrigem: string) => normalizeString(filterOrigem));
-        const hasMatchingOrigem = normalizedFilterOrigens.includes(normalizedAuctionOrigem);
-        
-        if (!hasMatchingOrigem) {
-          return false;
-        }
+      if (filters.ano) {
+        const year = parseInt(auction.year || '0');
+        if (year < filters.ano[0] || year > filters.ano[1]) return false;
       }
       
-      // Etapa filter (multiple selection) - FIXED: Use mapping to translate filter values to mock data values
-      if (filters.etapa && Array.isArray(filters.etapa) && filters.etapa.length > 0) {
-        if (!auction.etapa) {
-          return false;
-        }
-        
-        const normalizedAuctionEtapa = normalizeString(auction.etapa);
-        
-        // FIXED: Traduzir valores dos filtros para valores dos dados mock antes da normalização
-        const normalizedFilterEtapas = filters.etapa.map((filterEtapa: string) => {
-          const mappedValue = etapaMapping[filterEtapa] || filterEtapa;
-          return normalizeString(mappedValue);
-        });
-        
-        const hasMatchingEtapa = normalizedFilterEtapas.includes(normalizedAuctionEtapa);
-        
-        if (!hasMatchingEtapa) {
-          return false;
-        }
+      if (filters.preco) {
+        if (auction.currentBid < filters.preco[0] || auction.currentBid > filters.preco[1]) return false;
+      }
+    }
+    
+    // Property-specific filters
+    if (category === 'imoveis') {
+      if (filters.area) {
+        // Mock area calculation (would come from database)
+        const mockArea = 85; // Default mock area
+        if (mockArea < filters.area[0] || mockArea > filters.area[1]) return false;
       }
       
-      // Category-specific filters
-      if (category === 'veiculos') {
-        // Marca filter
-        if (filters.marca && filters.marca !== "all" && getBrandFromTitle(auction.title) !== filters.marca.toLowerCase()) {
-          return false;
-        }
-        
-        // Modelo filter
-        if (filters.modelo && filters.modelo !== "all" && getModelFromTitle(auction.title) !== filters.modelo.toLowerCase()) {
-          return false;
-        }
-        
-        // Cor filter - FIXED: Normalize color comparison
-        if (filters.cor && filters.cor !== "all" && auction.color?.toLowerCase() !== filters.cor.toLowerCase()) {
-          return false;
-        }
-        
-        // Ano range filter
-        if (filters.ano) {
-          const year = parseInt(auction.year || '0');
-          if (year < filters.ano[0] || year > filters.ano[1]) {
-            return false;
-          }
-        }
-        
-        // Preço range filter
-        if (filters.preco) {
-          if (auction.currentBid < filters.preco[0] || auction.currentBid > filters.preco[1]) {
-            return false;
-          }
-        }
-      } else {
-        // Área range filter (for properties)
-        if (filters.area) {
-          // Mock area calculation based on price (for demo purposes)
-          const mockArea = Math.floor(auction.currentBid / 10000);
-          if (mockArea < filters.area[0] || mockArea > filters.area[1]) {
-            return false;
-          }
-        }
-        
-        // Valor range filter
-        if (filters.valor) {
-          if (auction.currentBid < filters.valor[0] || auction.currentBid > filters.valor[1]) {
-            return false;
-          }
-        }
+      if (filters.valor) {
+        if (auction.currentBid < filters.valor[0] || auction.currentBid > filters.valor[1]) return false;
       }
-      
-      return true;
-    });
-  }
-  
-  // Apply search filter
-  if (searchQuery && searchQuery.trim()) {
-    const query = searchQuery.toLowerCase().trim();
-    auctions = auctions.filter(auction => 
-      auction.title.toLowerCase().includes(query) ||
-      auction.description.toLowerCase().includes(query) ||
-      auction.location.toLowerCase().includes(query)
-    );
-  }
+    }
+    
+    return true;
+  });
   
   // Apply sorting
-  if (sortOption) {
-    auctions = [...auctions].sort((a, b) => {
-      switch (sortOption) {
-        case 'newest':
-          return b.endDate.getTime() - a.endDate.getTime();
-        case 'lowest-bid':
-          return a.currentBid - b.currentBid;
-        case 'highest-bid':
-          return b.currentBid - a.currentBid;
-        case 'highest-discount':
-          const discountA = a.appraisedValue ? ((a.appraisedValue - a.currentBid) / a.appraisedValue) * 100 : 0;
-          const discountB = b.appraisedValue ? ((b.appraisedValue - b.currentBid) / b.appraisedValue) * 100 : 0;
-          return discountB - discountA;
-        case 'nearest':
-          return a.endDate.getTime() - b.endDate.getTime();
-        default:
-          return 0;
-      }
-    });
-  }
+  filtered.sort((a, b) => {
+    switch (sortOption) {
+      case 'newest':
+        return new Date(b.endDate).getTime() - new Date(a.endDate).getTime();
+      case 'lowest-bid':
+        return a.currentBid - b.currentBid;
+      case 'highest-bid':
+        return b.currentBid - a.currentBid;
+      case 'highest-discount':
+        const discountA = a.appraisedValue ? ((a.appraisedValue - a.currentBid) / a.appraisedValue) * 100 : 0;
+        const discountB = b.appraisedValue ? ((b.appraisedValue - b.currentBid) / b.appraisedValue) * 100 : 0;
+        return discountB - discountA;
+      case 'nearest':
+        return new Date(a.endDate).getTime() - new Date(b.endDate).getTime();
+      default:
+        return 0;
+    }
+  });
   
-  return auctions;
-};
+  return filtered;
+}
