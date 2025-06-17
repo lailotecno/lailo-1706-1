@@ -10,6 +10,7 @@ import { EmptyState } from '../components/EmptyState';
 import { getAuctionsByCategory } from '../data/mockAuctions';
 import { ViewMode, SortOption, Category } from '../types/auction';
 import { isValidVehicleType, isValidPropertyType } from '../utils/typeNormalization';
+import { useAppContext } from '../contexts/AppContext';
 
 interface BuscadorListingPageProps {
   category: Category;
@@ -17,55 +18,23 @@ interface BuscadorListingPageProps {
 
 const ITEMS_PER_PAGE = 30;
 
-// Default filter states
-const defaultImoveisFilters = {
-  estado: "",
-  cidade: "",
-  area: [0, 1000] as [number, number],
-  valor: [0, 5000000] as [number, number],
-  formato: "",
-  origem: [] as string[],
-  etapa: [] as string[]
-}
-
-const defaultVeiculosFilters = {
-  estado: "",
-  cidade: "",
-  marca: "",
-  modelo: "",
-  cor: "",
-  ano: [1990, 2024] as [number, number],
-  preco: [0, 500000] as [number, number],
-  formato: "",
-  origem: [] as string[],
-  etapa: [] as string[]
-}
-
-// Global state for view mode persistence
-let globalViewMode: ViewMode = 'horizontal';
-
 export const BuscadorListingPage: React.FC<BuscadorListingPageProps> = ({ category }) => {
   const { tipo } = useParams<{ tipo: string }>();
-  const [viewMode, setViewMode] = useState<ViewMode>(globalViewMode);
+  const { state, actions } = useAppContext();
+  
+  // Estados locais (não persistidos)
   const [showFilters, setShowFilters] = useState(false);
   const [showSortPopover, setShowSortPopover] = useState(false);
-  const [selectedSort, setSelectedSort] = useState<SortOption>('newest');
   const [currentPage, setCurrentPage] = useState(1);
   const [showSearch, setShowSearch] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
 
-  // Staged filter states (what user is editing)
-  const [stagedImoveisFilters, setStagedImoveisFilters] = useState(defaultImoveisFilters);
-  const [stagedVeiculosFilters, setStagedVeiculosFilters] = useState(defaultVeiculosFilters);
-
-  // Applied filter states (what actually filters the results)
-  const [appliedImoveisFilters, setAppliedImoveisFilters] = useState(defaultImoveisFilters);
-  const [appliedVeiculosFilters, setAppliedVeiculosFilters] = useState(defaultVeiculosFilters);
-
-  // Update global view mode when local state changes
-  useEffect(() => {
-    globalViewMode = viewMode;
-  }, [viewMode]);
+  console.log('🏠 BuscadorListingPage - Estado do contexto:', {
+    category,
+    viewMode: state.viewMode,
+    sortOption: state.sortOption,
+    searchQuery: state.searchQuery,
+    filters: state.filters
+  });
 
   // Validar e normalizar o tipo
   const getCurrentType = (): string => {
@@ -80,34 +49,34 @@ export const BuscadorListingPage: React.FC<BuscadorListingPageProps> = ({ catego
 
   const currentType = getCurrentType();
   
-  // Get filtered and sorted auctions using APPLIED filters
+  // Get filtered and sorted auctions using context state
   const { auctions: filteredAndSortedAuctions, totalSites, newAuctions } = useMemo(() => {
-    console.log('🔍 Buscando leilões:', { category, currentType, selectedSort, searchQuery });
+    console.log('🔍 Buscando leilões:', { category, currentType, sortOption: state.sortOption, searchQuery: state.searchQuery });
     
     try {
       // Convert our filter format to the expected format
       const filters = category === 'imoveis' ? {
-        format: appliedImoveisFilters.formato || undefined,
-        origin: appliedImoveisFilters.origem.length > 0 ? appliedImoveisFilters.origem : undefined,
-        stage: appliedImoveisFilters.etapa.length > 0 ? appliedImoveisFilters.etapa : undefined,
-        state: appliedImoveisFilters.estado && appliedImoveisFilters.estado !== "all" ? appliedImoveisFilters.estado : undefined,
-        city: appliedImoveisFilters.cidade && appliedImoveisFilters.cidade !== "all" ? appliedImoveisFilters.cidade : undefined,
-        useful_area_m2: appliedImoveisFilters.area,
-        initial_bid_value: appliedImoveisFilters.valor
+        format: state.filters.imoveis.formato || undefined,
+        origin: state.filters.imoveis.origem.length > 0 ? state.filters.imoveis.origem : undefined,
+        stage: state.filters.imoveis.etapa.length > 0 ? state.filters.imoveis.etapa : undefined,
+        state: state.filters.imoveis.estado && state.filters.imoveis.estado !== "all" ? state.filters.imoveis.estado : undefined,
+        city: state.filters.imoveis.cidade && state.filters.imoveis.cidade !== "all" ? state.filters.imoveis.cidade : undefined,
+        useful_area_m2: state.filters.imoveis.area,
+        initial_bid_value: state.filters.imoveis.valor
       } : {
-        format: appliedVeiculosFilters.formato || undefined,
-        origin: appliedVeiculosFilters.origem.length > 0 ? appliedVeiculosFilters.origem : undefined,
-        stage: appliedVeiculosFilters.etapa.length > 0 ? appliedVeiculosFilters.etapa : undefined,
-        state: appliedVeiculosFilters.estado && appliedVeiculosFilters.estado !== "all" ? appliedVeiculosFilters.estado : undefined,
-        city: appliedVeiculosFilters.cidade && appliedVeiculosFilters.cidade !== "all" ? appliedVeiculosFilters.cidade : undefined,
-        brand: appliedVeiculosFilters.marca && appliedVeiculosFilters.marca !== "all" ? appliedVeiculosFilters.marca : undefined,
-        model: appliedVeiculosFilters.modelo && appliedVeiculosFilters.modelo !== "all" ? appliedVeiculosFilters.modelo : undefined,
-        color: appliedVeiculosFilters.cor && appliedVeiculosFilters.cor !== "all" ? appliedVeiculosFilters.cor : undefined,
-        year: appliedVeiculosFilters.ano,
-        initial_bid_value: appliedVeiculosFilters.preco
+        format: state.filters.veiculos.formato || undefined,
+        origin: state.filters.veiculos.origem.length > 0 ? state.filters.veiculos.origem : undefined,
+        stage: state.filters.veiculos.etapa.length > 0 ? state.filters.veiculos.etapa : undefined,
+        state: state.filters.veiculos.estado && state.filters.veiculos.estado !== "all" ? state.filters.veiculos.estado : undefined,
+        city: state.filters.veiculos.cidade && state.filters.veiculos.cidade !== "all" ? state.filters.veiculos.cidade : undefined,
+        brand: state.filters.veiculos.marca && state.filters.veiculos.marca !== "all" ? state.filters.veiculos.marca : undefined,
+        model: state.filters.veiculos.modelo && state.filters.veiculos.modelo !== "all" ? state.filters.veiculos.modelo : undefined,
+        color: state.filters.veiculos.cor && state.filters.veiculos.cor !== "all" ? state.filters.veiculos.cor : undefined,
+        year: state.filters.veiculos.ano,
+        initial_bid_value: state.filters.veiculos.preco
       };
 
-      const result = getAuctionsByCategory(category, currentType, filters, selectedSort, searchQuery);
+      const result = getAuctionsByCategory(category, currentType, filters, state.sortOption, state.searchQuery);
       console.log('📊 Resultado da busca:', result);
       
       return result;
@@ -115,7 +84,7 @@ export const BuscadorListingPage: React.FC<BuscadorListingPageProps> = ({ catego
       console.error('❌ Erro ao buscar leilões:', error);
       return { auctions: [], totalSites: 0, newAuctions: 0 };
     }
-  }, [category, currentType, appliedImoveisFilters, appliedVeiculosFilters, selectedSort, searchQuery]);
+  }, [category, currentType, state.filters, state.sortOption, state.searchQuery]);
   
   // Calculate pagination
   const totalPages = Math.ceil(filteredAndSortedAuctions.length / ITEMS_PER_PAGE);
@@ -133,11 +102,11 @@ export const BuscadorListingPage: React.FC<BuscadorListingPageProps> = ({ catego
   // Reset page when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [appliedImoveisFilters, appliedVeiculosFilters, selectedSort, searchQuery, currentType]);
+  }, [state.filters, state.sortOption, state.searchQuery, currentType]);
   
   // Check if there are active filters
   const hasActiveFilters = useMemo(() => {
-    const filters = category === 'imoveis' ? appliedImoveisFilters : appliedVeiculosFilters;
+    const filters = category === 'imoveis' ? state.filters.imoveis : state.filters.veiculos;
     
     return (
       (filters.estado && filters.estado !== "all") ||
@@ -149,19 +118,19 @@ export const BuscadorListingPage: React.FC<BuscadorListingPageProps> = ({ catego
         (filters.marca && filters.marca !== "all") ||
         (filters.modelo && filters.modelo !== "all") ||
         (filters.cor && filters.cor !== "all") ||
-        filters.ano[0] !== defaultVeiculosFilters.ano[0] ||
-        filters.ano[1] !== defaultVeiculosFilters.ano[1] ||
-        filters.preco[0] !== defaultVeiculosFilters.preco[0] ||
-        filters.preco[1] !== defaultVeiculosFilters.preco[1]
+        filters.ano[0] !== 1990 ||
+        filters.ano[1] !== 2024 ||
+        filters.preco[0] !== 0 ||
+        filters.preco[1] !== 500000
       )) ||
       (category === 'imoveis' && (
-        filters.area[0] !== defaultImoveisFilters.area[0] ||
-        filters.area[1] !== defaultImoveisFilters.area[1] ||
-        filters.valor[0] !== defaultImoveisFilters.valor[0] ||
-        filters.valor[1] !== defaultImoveisFilters.valor[1]
+        filters.area[0] !== 0 ||
+        filters.area[1] !== 1000 ||
+        filters.valor[0] !== 0 ||
+        filters.valor[1] !== 5000000
       ))
     );
-  }, [category, appliedImoveisFilters, appliedVeiculosFilters]);
+  }, [category, state.filters]);
   
   const getStatusText = () => {
     const count = filteredAndSortedAuctions.length;
@@ -196,7 +165,7 @@ export const BuscadorListingPage: React.FC<BuscadorListingPageProps> = ({ catego
   const handleSearchToggle = () => {
     setShowSearch(!showSearch);
     if (showSearch) {
-      setSearchQuery('');
+      actions.setSearchQuery('');
     }
   };
 
@@ -205,34 +174,21 @@ export const BuscadorListingPage: React.FC<BuscadorListingPageProps> = ({ catego
     // Search is already handled by the useMemo dependency
   };
 
-  const handleApplyFilters = () => {
-    // Copy staged filters to applied filters
-    if (category === 'imoveis') {
-      setAppliedImoveisFilters({ ...stagedImoveisFilters });
-    } else {
-      setAppliedVeiculosFilters({ ...stagedVeiculosFilters });
-    }
-    console.log('Filters applied:', category === 'imoveis' ? stagedImoveisFilters : stagedVeiculosFilters);
-  };
-
   const handleClearFilters = () => {
-    // Reset both staged and applied filters
     if (category === 'imoveis') {
-      setStagedImoveisFilters(defaultImoveisFilters);
-      setAppliedImoveisFilters(defaultImoveisFilters);
+      actions.clearImoveisFilters();
     } else {
-      setStagedVeiculosFilters(defaultVeiculosFilters);
-      setAppliedVeiculosFilters(defaultVeiculosFilters);
+      actions.clearVeiculosFilters();
     }
   };
 
   const handleClearSearch = () => {
-    setSearchQuery('');
+    actions.setSearchQuery('');
     setShowSearch(false);
   };
 
   const handleSortChange = (sort: SortOption) => {
-    setSelectedSort(sort);
+    actions.setSortOption(sort);
     setShowSortPopover(false);
   };
 
@@ -270,9 +226,9 @@ export const BuscadorListingPage: React.FC<BuscadorListingPageProps> = ({ catego
             {/* View Toggle */}
             <div className="flex bg-gray-100 rounded-lg p-1 flex-shrink-0">
               <button
-                onClick={() => setViewMode('horizontal')}
+                onClick={() => actions.setViewMode('horizontal')}
                 className={`p-2 rounded-md transition-colors ${
-                  viewMode === 'horizontal'
+                  state.viewMode === 'horizontal'
                     ? 'bg-white text-blue-600 shadow-sm'
                     : 'text-gray-600 hover:text-gray-900'
                 }`}
@@ -281,9 +237,9 @@ export const BuscadorListingPage: React.FC<BuscadorListingPageProps> = ({ catego
                 <LayoutList className="w-4 h-4" />
               </button>
               <button
-                onClick={() => setViewMode('vertical')}
+                onClick={() => actions.setViewMode('vertical')}
                 className={`p-2 rounded-md transition-colors ${
-                  viewMode === 'vertical'
+                  state.viewMode === 'vertical'
                     ? 'bg-white text-blue-600 shadow-sm'
                     : 'text-gray-600 hover:text-gray-900'
                 }`}
@@ -306,8 +262,8 @@ export const BuscadorListingPage: React.FC<BuscadorListingPageProps> = ({ catego
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
                   type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  value={state.searchQuery}
+                  onChange={(e) => actions.setSearchQuery(e.target.value)}
                   placeholder="Busque por palavra-chave"
                   className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   autoFocus
@@ -351,9 +307,9 @@ export const BuscadorListingPage: React.FC<BuscadorListingPageProps> = ({ catego
               
               <div className="bg-gray-100 rounded-xl p-1">
                 <button
-                  onClick={() => setViewMode('horizontal')}
+                  onClick={() => actions.setViewMode('horizontal')}
                   className={`p-2 rounded-lg transition-colors ${
-                    viewMode === 'horizontal'
+                    state.viewMode === 'horizontal'
                       ? 'bg-white text-blue-600 shadow-sm'
                       : 'text-gray-600 hover:text-gray-900'
                   }`}
@@ -361,9 +317,9 @@ export const BuscadorListingPage: React.FC<BuscadorListingPageProps> = ({ catego
                   <LayoutList className="w-4 h-4" />
                 </button>
                 <button
-                  onClick={() => setViewMode('vertical')}
+                  onClick={() => actions.setViewMode('vertical')}
                   className={`p-2 rounded-lg transition-colors ${
-                    viewMode === 'vertical'
+                    state.viewMode === 'vertical'
                       ? 'bg-white text-blue-600 shadow-sm'
                       : 'text-gray-600 hover:text-gray-900'
                   }`}
@@ -381,12 +337,7 @@ export const BuscadorListingPage: React.FC<BuscadorListingPageProps> = ({ catego
         <div className="hidden min-[768px]:block w-[35%] max-w-md flex-shrink-0">
           <FilterSidebar 
             category={category}
-            imoveisFilters={stagedImoveisFilters}
-            veiculosFilters={stagedVeiculosFilters}
-            onImoveisFiltersChange={setStagedImoveisFilters}
-            onVeiculosFiltersChange={setStagedVeiculosFilters}
-            onApplyFilters={handleApplyFilters}
-            onClearFilters={handleClearFilters}
+            currentVehicleType={tipo || 'todos'}
           />
         </div>
 
@@ -419,7 +370,7 @@ export const BuscadorListingPage: React.FC<BuscadorListingPageProps> = ({ catego
                         onClick={() => setShowSortPopover(!showSortPopover)}
                         className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors whitespace-nowrap"
                       >
-                        <span>{getSortLabel(selectedSort)}</span>
+                        <span>{getSortLabel(state.sortOption)}</span>
                         <ChevronDown className="w-4 h-4" />
                       </button>
                       
@@ -427,7 +378,7 @@ export const BuscadorListingPage: React.FC<BuscadorListingPageProps> = ({ catego
                       <SortPopover
                         isOpen={showSortPopover}
                         onClose={() => setShowSortPopover(false)}
-                        selectedSort={selectedSort}
+                        selectedSort={state.sortOption}
                         onSortChange={handleSortChange}
                         isMobile={false}
                       />
@@ -442,22 +393,22 @@ export const BuscadorListingPage: React.FC<BuscadorListingPageProps> = ({ catego
                   category={category}
                   hasActiveFilters={hasActiveFilters}
                   onClearFilters={handleClearFilters}
-                  onClearSearch={searchQuery ? handleClearSearch : undefined}
-                  searchQuery={searchQuery}
+                  onClearSearch={state.searchQuery ? handleClearSearch : undefined}
+                  searchQuery={state.searchQuery}
                 />
               ) : (
                 <>
                   {/* Auction Cards */}
                   <div className={
-                    viewMode === 'horizontal'
-                      ? 'space-y-3 w-full'
-                      : 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 w-full'
+                    state.viewMode === 'horizontal'
+                      ? 'space-y-3 w-full min-h-[400px]'
+                      : 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 w-full min-h-[400px]'
                   }>
                     {currentAuctions.map((auction) => (
                       <AuctionCard
                         key={auction._id}
                         auction={auction}
-                        viewMode={viewMode}
+                        viewMode={state.viewMode}
                       />
                     ))}
                   </div>
@@ -485,12 +436,7 @@ export const BuscadorListingPage: React.FC<BuscadorListingPageProps> = ({ catego
         onClose={() => setShowFilters(false)}
         isMobile={true}
         category={category}
-        imoveisFilters={stagedImoveisFilters}
-        veiculosFilters={stagedVeiculosFilters}
-        onImoveisFiltersChange={setStagedImoveisFilters}
-        onVeiculosFiltersChange={setStagedVeiculosFilters}
-        onApplyFilters={handleApplyFilters}
-        onClearFilters={handleClearFilters}
+        currentVehicleType={tipo || 'todos'}
       />
 
       {/* Mobile Sort Popover - APENAS MOBILE - ESCONDIDO NO DESKTOP */}
@@ -498,7 +444,7 @@ export const BuscadorListingPage: React.FC<BuscadorListingPageProps> = ({ catego
         <SortPopover
           isOpen={showSortPopover}
           onClose={() => setShowSortPopover(false)}
-          selectedSort={selectedSort}
+          selectedSort={state.sortOption}
           onSortChange={handleSortChange}
           isMobile={true}
         />

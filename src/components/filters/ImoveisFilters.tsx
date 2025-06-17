@@ -4,26 +4,12 @@ import { RangeSlider } from "./RangeSlider"
 import { FormatToggle } from "./FormatToggle"
 import { MultiToggleGrid } from "./MultiToggleGrid"
 import { getEstadosOptions, getMunicipiosOptions, fetchMunicipiosByEstado, Municipio } from "../../utils/ibgeApi"
+import { useAppContext } from "../../contexts/AppContext"
 
-interface ImoveisFiltersState {
-  estado: string
-  cidade: string
-  area: [number, number]
-  valor: [number, number]
-  formato: string
-  origem: string[]
-  etapa: string[]
-}
-
-interface ImoveisFiltersProps {
-  filters: ImoveisFiltersState
-  onFiltersChange: (filters: Partial<ImoveisFiltersState>) => void
-}
-
-export const ImoveisFilters: React.FC<ImoveisFiltersProps> = ({
-  filters,
-  onFiltersChange
-}) => {
+export const ImoveisFilters: React.FC = () => {
+  const { state, actions } = useAppContext();
+  const filters = state.filters.imoveis;
+  
   const [municipios, setMunicipios] = React.useState<Municipio[]>([])
   const [loadingMunicipios, setLoadingMunicipios] = React.useState(false)
 
@@ -82,8 +68,7 @@ export const ImoveisFilters: React.FC<ImoveisFiltersProps> = ({
       willResetCidade: true
     })
     
-    onFiltersChange({ 
-      ...filters,
+    actions.setImoveisFilters({ 
       estado: value,
       cidade: "" // Reset cidade when estado changes
     })
@@ -95,7 +80,7 @@ export const ImoveisFilters: React.FC<ImoveisFiltersProps> = ({
       currentFilters: filters
     })
     
-    onFiltersChange({ ...filters, cidade: value })
+    actions.setImoveisFilters({ cidade: value })
   }
 
   return (
@@ -134,7 +119,7 @@ export const ImoveisFilters: React.FC<ImoveisFiltersProps> = ({
           max={1000}
           step={10}
           value={filters.area}
-          onValueChange={(value) => onFiltersChange({ ...filters, area: value })}
+          onValueChange={(value) => actions.setImoveisFilters({ area: value })}
           suffix="m²"
         />
       </div>
@@ -149,7 +134,7 @@ export const ImoveisFilters: React.FC<ImoveisFiltersProps> = ({
           max={5000000}
           step={10000}
           value={filters.valor}
-          onValueChange={(value) => onFiltersChange({ ...filters, valor: value })}
+          onValueChange={(value) => actions.setImoveisFilters({ valor: value })}
           prefix="R$ "
         />
       </div>
@@ -157,7 +142,7 @@ export const ImoveisFilters: React.FC<ImoveisFiltersProps> = ({
       {/* Formato - New dedicated component */}
       <FormatToggle
         value={filters.formato}
-        onValueChange={(value) => onFiltersChange({ ...filters, formato: value })}
+        onValueChange={(value) => actions.setImoveisFilters({ formato: value })}
       />
 
       {/* Origem */}
@@ -168,7 +153,7 @@ export const ImoveisFilters: React.FC<ImoveisFiltersProps> = ({
         <MultiToggleGrid
           options={origemOptions}
           value={filters.origem}
-          onValueChange={(value) => onFiltersChange({ ...filters, origem: value })}
+          onValueChange={(value) => actions.setImoveisFilters({ origem: value })}
         />
       </div>
 
@@ -180,7 +165,7 @@ export const ImoveisFilters: React.FC<ImoveisFiltersProps> = ({
         <MultiToggleGrid
           options={etapaOptions}
           value={filters.etapa}
-          onValueChange={(value) => onFiltersChange({ ...filters, etapa: value })}
+          onValueChange={(value) => actions.setImoveisFilters({ etapa: value })}
           disabled={isVendaDireta}
         />
         {/* Espaço reservado para mensagem condicional para evitar layout shift */}

@@ -3,19 +3,14 @@ import { X } from 'lucide-react';
 import { Category } from '../types/auction';
 import { ImoveisFilters } from './filters/ImoveisFilters';
 import { VeiculosFilters } from './filters/VeiculosFilters';
-import { useParams } from 'react-router-dom';
+import { useAppContext } from '../contexts/AppContext';
 
 interface FilterSidebarProps {
   isOpen?: boolean;
   onClose?: () => void;
   isMobile?: boolean;
   category: Category;
-  imoveisFilters: any;
-  veiculosFilters: any;
-  onImoveisFiltersChange: (filters: any) => void;
-  onVeiculosFiltersChange: (filters: any) => void;
-  onApplyFilters: () => void;
-  onClearFilters: () => void;
+  currentVehicleType?: string;
 }
 
 export const FilterSidebar: React.FC<FilterSidebarProps> = ({ 
@@ -23,14 +18,9 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
   onClose, 
   isMobile = false,
   category,
-  imoveisFilters,
-  veiculosFilters,
-  onImoveisFiltersChange,
-  onVeiculosFiltersChange,
-  onApplyFilters,
-  onClearFilters
+  currentVehicleType = 'todos'
 }) => {
-  const { tipo } = useParams<{ tipo: string }>();
+  const { state, actions } = useAppContext();
   const [isApplying, setIsApplying] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
 
@@ -46,12 +36,8 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
     // Simular um pequeno delay para feedback visual
     await new Promise(resolve => setTimeout(resolve, 300));
     
-    try {
-      onApplyFilters();
-    } catch (error) {
-      console.error('❌ Erro ao aplicar filtros:', error);
-    }
-    
+    // No contexto, os filtros já são aplicados automaticamente
+    // Aqui só precisamos fechar o modal no mobile
     setIsApplying(false);
     
     if (isMobile && onClose) {
@@ -66,7 +52,11 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
     await new Promise(resolve => setTimeout(resolve, 200));
     
     try {
-      onClearFilters();
+      if (category === 'imoveis') {
+        actions.clearImoveisFilters();
+      } else {
+        actions.clearVeiculosFilters();
+      }
     } catch (error) {
       console.error('❌ Erro ao limpar filtros:', error);
     }
@@ -105,16 +95,9 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
           {/* Filters content - Scrollable area */}
           <div className="flex-1 overflow-y-auto p-4 scrollbar-hide relative z-[75]">
             {category === 'imoveis' ? (
-              <ImoveisFilters
-                filters={imoveisFilters}
-                onFiltersChange={onImoveisFiltersChange}
-              />
+              <ImoveisFilters />
             ) : (
-              <VeiculosFilters
-                filters={veiculosFilters}
-                onFiltersChange={onVeiculosFiltersChange}
-                currentVehicleType={tipo || 'todos'}
-              />
+              <VeiculosFilters currentVehicleType={currentVehicleType} />
             )}
           </div>
 
@@ -161,16 +144,9 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
       {/* Filters content - Compact spacing */}
       <div className="absolute top-16 bottom-16 left-0 right-0 overflow-y-auto px-4 md:px-6 py-3 scrollbar-hide">
         {category === 'imoveis' ? (
-          <ImoveisFilters
-            filters={imoveisFilters}
-            onFiltersChange={onImoveisFiltersChange}
-          />
+          <ImoveisFilters />
         ) : (
-          <VeiculosFilters
-            filters={veiculosFilters}
-            onFiltersChange={onVeiculosFiltersChange}
-            currentVehicleType={tipo || 'todos'}
-          />
+          <VeiculosFilters currentVehicleType={currentVehicleType} />
         )}
       </div>
 

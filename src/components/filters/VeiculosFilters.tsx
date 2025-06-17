@@ -4,31 +4,18 @@ import { RangeSlider } from "./RangeSlider"
 import { FormatToggle } from "./FormatToggle"
 import { MultiToggleGrid } from "./MultiToggleGrid"
 import { getEstadosOptions, getMunicipiosOptions, fetchMunicipiosByEstado, Municipio } from "../../utils/ibgeApi"
-
-interface VeiculosFiltersState {
-  estado: string
-  cidade: string
-  marca: string
-  modelo: string
-  cor: string
-  ano: [number, number]
-  preco: [number, number]
-  formato: string
-  origem: string[]
-  etapa: string[]
-}
+import { useAppContext } from "../../contexts/AppContext"
 
 interface VeiculosFiltersProps {
-  filters: VeiculosFiltersState
-  onFiltersChange: (filters: Partial<VeiculosFiltersState>) => void
-  currentVehicleType?: string // Novo prop para receber o tipo atual
+  currentVehicleType?: string; // Novo prop para receber o tipo atual
 }
 
 export const VeiculosFilters: React.FC<VeiculosFiltersProps> = ({
-  filters,
-  onFiltersChange,
   currentVehicleType = 'todos'
 }) => {
+  const { state, actions } = useAppContext();
+  const filters = state.filters.veiculos;
+  
   const [municipios, setMunicipios] = React.useState<Municipio[]>([])
   const [loadingMunicipios, setLoadingMunicipios] = React.useState(false)
 
@@ -141,8 +128,7 @@ export const VeiculosFilters: React.FC<VeiculosFiltersProps> = ({
       willResetCidade: true
     })
     
-    onFiltersChange({ 
-      ...filters,
+    actions.setVeiculosFilters({ 
       estado: value,
       cidade: "" // Reset cidade when estado changes
     })
@@ -154,7 +140,7 @@ export const VeiculosFilters: React.FC<VeiculosFiltersProps> = ({
       currentFilters: filters
     })
     
-    onFiltersChange({ ...filters, cidade: value })
+    actions.setVeiculosFilters({ cidade: value })
   }
 
   return (
@@ -194,8 +180,7 @@ export const VeiculosFilters: React.FC<VeiculosFiltersProps> = ({
               options={marcas}
               value={filters.marca}
               onValueChange={(value) => {
-                onFiltersChange({ 
-                  ...filters,
+                actions.setVeiculosFilters({ 
                   marca: value,
                   modelo: "" // Reset modelo when marca changes
                 })
@@ -206,7 +191,7 @@ export const VeiculosFilters: React.FC<VeiculosFiltersProps> = ({
             <ComboBoxSearch
               options={getModelos(filters.marca)}
               value={filters.modelo}
-              onValueChange={(value) => onFiltersChange({ ...filters, modelo: value })}
+              onValueChange={(value) => actions.setVeiculosFilters({ modelo: value })}
               placeholder="Modelo"
               searchPlaceholder="Buscar modelo..."
               disabled={!filters.marca || filters.marca === "all"}
@@ -223,7 +208,7 @@ export const VeiculosFilters: React.FC<VeiculosFiltersProps> = ({
         <ComboBoxSearch
           options={cores}
           value={filters.cor}
-          onValueChange={(value) => onFiltersChange({ ...filters, cor: value })}
+          onValueChange={(value) => actions.setVeiculosFilters({ cor: value })}
           placeholder="Cor"
           searchPlaceholder="Buscar cor..."
         />
@@ -239,7 +224,7 @@ export const VeiculosFilters: React.FC<VeiculosFiltersProps> = ({
           max={2024}
           step={1}
           value={filters.ano}
-          onValueChange={(value) => onFiltersChange({ ...filters, ano: value })}
+          onValueChange={(value) => actions.setVeiculosFilters({ ano: value })}
         />
       </div>
 
@@ -253,7 +238,7 @@ export const VeiculosFilters: React.FC<VeiculosFiltersProps> = ({
           max={500000}
           step={5000}
           value={filters.preco}
-          onValueChange={(value) => onFiltersChange({ ...filters, preco: value })}
+          onValueChange={(value) => actions.setVeiculosFilters({ preco: value })}
           prefix="R$ "
         />
       </div>
@@ -261,7 +246,7 @@ export const VeiculosFilters: React.FC<VeiculosFiltersProps> = ({
       {/* Formato - New dedicated component */}
       <FormatToggle
         value={filters.formato}
-        onValueChange={(value) => onFiltersChange({ ...filters, formato: value })}
+        onValueChange={(value) => actions.setVeiculosFilters({ formato: value })}
       />
 
       {/* Origem */}
@@ -272,7 +257,7 @@ export const VeiculosFilters: React.FC<VeiculosFiltersProps> = ({
         <MultiToggleGrid
           options={origemOptions}
           value={filters.origem}
-          onValueChange={(value) => onFiltersChange({ ...filters, origem: value })}
+          onValueChange={(value) => actions.setVeiculosFilters({ origem: value })}
         />
       </div>
 
@@ -284,7 +269,7 @@ export const VeiculosFilters: React.FC<VeiculosFiltersProps> = ({
         <MultiToggleGrid
           options={etapaOptions}
           value={filters.etapa}
-          onValueChange={(value) => onFiltersChange({ ...filters, etapa: value })}
+          onValueChange={(value) => actions.setVeiculosFilters({ etapa: value })}
           disabled={isVendaDireta}
         />
         {/* Espaço reservado para mensagem condicional para evitar layout shift */}
