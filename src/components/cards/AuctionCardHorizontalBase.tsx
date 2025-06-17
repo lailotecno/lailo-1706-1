@@ -60,11 +60,11 @@ export function AuctionCardHorizontalBase({
           )}
 
           <div className="flex items-start justify-between gap-2">
-            {/* CORREÇÃO: Altura FIXA em vez de mínima para eliminar layout shift */}
+            {/* CORREÇÃO FINAL: Remover TODAS as classes que causam recálculo */}
             <div className="flex-1 min-w-0 h-[68px] flex flex-col justify-between">
-              <div className="flex-shrink-0">
+              <div>
                 <div className="flex items-center gap-1.5 mb-0.5">
-                  <h3 className="text-[13px] md:text-sm font-bold text-gray-900 leading-tight flex-shrink-0">
+                  <h3 className="text-[13px] md:text-sm font-bold text-gray-900 leading-tight truncate">
                     {titleLeft}
                   </h3>
                   {area && (
@@ -85,13 +85,13 @@ export function AuctionCardHorizontalBase({
                   )}
                 </div>
                 
-                <p className="text-[11px] md:text-xs text-gray-600 line-clamp-1 leading-tight">
+                <p className="text-[11px] md:text-xs text-gray-600 truncate leading-tight">
                   {subtitle}
                 </p>
               </div>
 
-              {/* CORREÇÃO: Posição fixa na parte inferior */}
-              <div className="flex items-baseline gap-1.5 flex-shrink-0">
+              {/* CORREÇÃO: Área do preço na parte inferior */}
+              <div className="flex items-baseline gap-1.5">
                 <span className="text-[15px] md:text-lg font-bold text-gray-900 leading-tight">
                   {price}
                 </span>
