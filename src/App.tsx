@@ -45,7 +45,12 @@ const ValidatedImoveisRoute: React.FC = () => {
 
 function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter
+      future={{
+        v7_startTransition: true,
+        v7_relativeSplatPath: true
+      }}
+    >
       <div className="relative bg-gray-50">
         <Routes>
           {/* Redirect /buscador to default */}
