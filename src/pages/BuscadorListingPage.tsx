@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { Grid3x3, LayoutList, ChevronDown, SlidersHorizontal, ArrowUpDown, Search, X } from 'lucide-react';
 import { AuctionCard } from '../components/AuctionCard';
@@ -62,6 +62,10 @@ export const BuscadorListingPage: React.FC<BuscadorListingPageProps> = ({ catego
   const [appliedImoveisFilters, setAppliedImoveisFilters] = useState(defaultImoveisFilters);
   const [appliedVeiculosFilters, setAppliedVeiculosFilters] = useState(defaultVeiculosFilters);
 
+  // CORREÇÃO: Ref para controlar altura do container e evitar layout shift
+  const mainContentRef = useRef<HTMLElement>(null);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+
   // Update global view mode when local state changes
   useEffect(() => {
     globalViewMode = viewMode;
@@ -91,6 +95,43 @@ export const BuscadorListingPage: React.FC<BuscadorListingPageProps> = ({ catego
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
   const currentAuctions = filteredAndSortedAuctions.slice(startIndex, endIndex);
+  
+  // CORREÇÃO: Controlar transição suave de altura ao navegar entre rotas
+  useEffect(() => {
+    if (mainContentRef.current) {
+      const currentHeight = mainContentRef.current.scrollHeight;
+      
+      // Aplicar altura atual antes da mudança
+      mainContentRef.current.style.height = `${currentHeight}px`;
+      setIsTransitioning(true);
+      
+      // Permitir que o DOM se atualize, depois aplicar nova altura
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          if (mainContentRef.current) {
+            mainContentRef.current.style.height = 'auto';
+            const newHeight = mainContentRef.current.scrollHeight;
+            mainContentRef.current.style.height = `${currentHeight}px`;
+            
+            // Forçar reflow e aplicar nova altura com transição
+            requestAnimationFrame(() => {
+              if (mainContentRef.current) {
+                mainContentRef.current.style.height = `${newHeight}px`;
+                
+                // Remover altura fixa após transição
+                setTimeout(() => {
+                  if (mainContentRef.current) {
+                    mainContentRef.current.style.height = 'auto';
+                    setIsTransitioning(false);
+                  }
+                }, 300);
+              }
+            });
+          }
+        });
+      });
+    }
+  }, [currentType, filteredAndSortedAuctions.length, viewMode]);
   
   // Reset page when filters change
   useEffect(() => {
@@ -364,7 +405,16 @@ export const BuscadorListingPage: React.FC<BuscadorListingPageProps> = ({ catego
               </div>
             </div>
             
-            <main className="w-full px-4 md:px-6 overflow-x-hidden">
+            {/* CORREÇÃO: Main content com transição suave de altura */}
+            <main 
+              ref={mainContentRef}
+              className={`w-full px-4 md:px-6 overflow-x-hidden ${
+                isTransitioning ? 'transition-all duration-300 ease-in-out' : ''
+              }`}
+              style={{
+                minHeight: isTransitioning ? undefined : 'auto'
+              }}
+            >
               {/* Header with status and desktop sort control - Only show if there are results */}
               {!showEmptyState && (
                 <div className="flex flex-col min-[768px]:flex-row min-[768px]:items-center min-[768px]:justify-between py-4 gap-3 w-full">
