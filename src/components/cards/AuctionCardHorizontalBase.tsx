@@ -92,11 +92,6 @@ export function AuctionCardHorizontalBase({
                 <span className="text-[15px] md:text-lg font-bold text-gray-900 leading-tight">
                   {price}
                 </span>
-                {appraisedValue && (
-                  <span className="text-[10px] md:text-xs text-gray-500">
-                    {appraisedValue}
-                  </span>
-                )}
                 {discount && (
                   <span className="bg-gradient-to-r from-green-500 to-green-600 text-white text-[10px] md:text-xs font-bold uppercase px-1.5 py-0.5 md:px-2 md:py-0.5 rounded-md shadow-sm">
                     {discount}

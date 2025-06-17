@@ -90,7 +90,6 @@ export const AuctionCard: React.FC<AuctionCardProps> = ({ auction, viewMode }) =
     date: formatTimeRemaining(auction.endDate),
     tags: tags,
     discount: discountText,
-    appraisedValue: auction.appraisedValue ? formatCurrency(auction.appraisedValue) : undefined,
   };
 
   if (viewMode === 'horizontal') {

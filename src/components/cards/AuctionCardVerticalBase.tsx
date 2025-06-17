@@ -106,11 +106,6 @@ export function AuctionCardVerticalBase({
             <span className="text-xl md:text-lg font-bold text-gray-900">
               {price}
             </span>
-            {appraisedValue && (
-              <span className="text-sm md:text-xs text-gray-500">
-                {appraisedValue}
-              </span>
-            )}
             {discount && (
               <span className="bg-gradient-to-r from-green-500 to-green-600 text-white text-xs font-bold uppercase px-2.5 py-1 rounded-lg shadow-sm">
                 {discount}
