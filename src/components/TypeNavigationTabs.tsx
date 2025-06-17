@@ -48,6 +48,11 @@ export const TypeNavigationTabs: React.FC<TypeNavigationTabsProps> = React.memo(
   const { tipo } = useParams<{ tipo: string }>();
   
   const tabsContainerRef = useRef<HTMLDivElement>(null);
+  const mobileTabsRef = useRef<HTMLDivElement>(null);
+
+  // 🎨 Estados para controle dos gradientes no mobile
+  const [showLeftGradient, setShowLeftGradient] = useState(false);
+  const [showRightGradient, setShowRightGradient] = useState(false);
 
   // 🚀 OTIMIZAÇÃO: Memoizar normalização do tipo atual
   const getCurrentType = useCallback((): string => {
@@ -124,6 +129,50 @@ export const TypeNavigationTabs: React.FC<TypeNavigationTabsProps> = React.memo(
       }));
     }
   }, [category, vehicleIcons, propertyIcons]);
+
+  // 🎨 Função para verificar overflow e atualizar gradientes no mobile
+  const updateMobileGradients = useCallback(() => {
+    const container = mobileTabsRef.current;
+    if (!container) return;
+
+    const { scrollLeft, scrollWidth, clientWidth } = container;
+    
+    // Mostrar gradiente esquerdo se não estiver no início
+    setShowLeftGradient(scrollLeft > 10);
+    
+    // Mostrar gradiente direito se não estiver no fim
+    setShowRightGradient(scrollLeft < scrollWidth - clientWidth - 10);
+  }, []);
+
+  // 🎨 Effect para configurar listeners de scroll no mobile
+  useEffect(() => {
+    const container = mobileTabsRef.current;
+    if (!container) return;
+
+    // Verificar gradientes inicialmente
+    updateMobileGradients();
+
+    // Adicionar listener de scroll
+    container.addEventListener('scroll', updateMobileGradients, { passive: true });
+    
+    // Verificar novamente após um pequeno delay (para garantir que o layout foi calculado)
+    const timeoutId = setTimeout(updateMobileGradients, 100);
+
+    return () => {
+      container.removeEventListener('scroll', updateMobileGradients);
+      clearTimeout(timeoutId);
+    };
+  }, [updateMobileGradients, tabs]); // Incluir tabs para recalcular quando mudar
+
+  // 🎨 Effect para verificar gradientes quando a janela redimensiona
+  useEffect(() => {
+    const handleResize = () => {
+      updateMobileGradients();
+    };
+
+    window.addEventListener('resize', handleResize, { passive: true });
+    return () => window.removeEventListener('resize', handleResize);
+  }, [updateMobileGradients]);
 
   // 🚀 OTIMIZAÇÃO: Memoizar handlers de scroll
   const handleScrollLeft = useCallback(() => {
@@ -214,17 +263,38 @@ export const TypeNavigationTabs: React.FC<TypeNavigationTabsProps> = React.memo(
         </div>
       </div>
 
-      {/* Mobile version - APENAS abaixo de 768px - SEM PADDING À ESQUERDA */}
+      {/* Mobile version - APENAS abaixo de 768px - COM GRADIENTES INDICATIVOS */}
       <div className="max-[767px]:block min-[768px]:hidden">
-        <div className="flex overflow-x-auto scrollbar-hide gap-2 py-3" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-          {tabs.map((tab) => (
-            <div key={tab.id} className="flex-shrink-0">
-              <TabButton
-                tab={tab}
-                isActive={currentType === tab.id}
-              />
-            </div>
-          ))}
+        <div className="relative">
+          {/* Container das tabs com scroll */}
+          <div 
+            ref={mobileTabsRef}
+            className="flex overflow-x-auto scrollbar-hide gap-2 py-3" 
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
+            {tabs.map((tab) => (
+              <div key={tab.id} className="flex-shrink-0">
+                <TabButton
+                  tab={tab}
+                  isActive={currentType === tab.id}
+                />
+              </div>
+            ))}
+          </div>
+
+          {/* 🎨 Gradiente indicativo ESQUERDO - mostra que há conteúdo à esquerda */}
+          <div 
+            className={`absolute left-0 top-0 bottom-0 w-6 bg-gradient-to-r from-white/90 via-white/60 to-transparent pointer-events-none transition-opacity duration-300 ${
+              showLeftGradient ? 'opacity-100' : 'opacity-0'
+            }`}
+          />
+
+          {/* 🎨 Gradiente indicativo DIREITO - mostra que há conteúdo à direita */}
+          <div 
+            className={`absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-white/90 via-white/60 to-transparent pointer-events-none transition-opacity duration-300 ${
+              showRightGradient ? 'opacity-100' : 'opacity-0'
+            }`}
+          />
         </div>
       </div>
     </div>
