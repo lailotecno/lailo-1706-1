@@ -67,23 +67,45 @@ export function AuctionCardHorizontalVehicle({
           <div className="flex items-start justify-between gap-2">
             {/* CORREÇÃO: Altura FIXA em vez de mínima para eliminar layout shift */}
             <div className="flex-1 min-w-0 h-[68px] flex flex-col justify-between">
-              <div className="flex-shrink-0">
-                <div className="flex items-center gap-1.5 mb-0.5">
-                  <h3 className="text-[13px] md:text-sm font-bold text-gray-900 leading-tight flex-shrink-0">
-                    {brand}
-                  </h3>
-                  <span className="text-[13px] md:text-sm font-bold text-gray-900 leading-tight truncate">
-                    {model}
-                  </span>
+              {/* CORREÇÃO: Título e botão favoritar na mesma linha */}
+              <div className="flex items-start justify-between gap-2 flex-shrink-0">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <h3 className="text-[13px] md:text-sm font-bold text-gray-900 leading-tight flex-shrink-0">
+                      {brand}
+                    </h3>
+                    <span className="text-[13px] md:text-sm font-bold text-gray-900 leading-tight truncate">
+                      {model}
+                    </span>
+                  </div>
+                  
+                  <div className="flex items-center gap-1.5 text-[11px] md:text-xs text-gray-600">
+                    <span className="font-normal">{color}</span>
+                    <span className="text-gray-300">•</span>
+                    <span className="font-normal">{year}</span>
+                    <span className="text-gray-300">•</span>
+                    <span className="truncate font-normal">{formatCityState(cityState)}</span>
+                  </div>
                 </div>
-                
-                <div className="flex items-center gap-1.5 text-[11px] md:text-xs text-gray-600">
-                  <span className="font-normal">{color}</span>
-                  <span className="text-gray-300">•</span>
-                  <span className="font-normal">{year}</span>
-                  <span className="text-gray-300">•</span>
-                  <span className="truncate font-normal">{formatCityState(cityState)}</span>
-                </div>
+
+                {/* CORREÇÃO: Botão favoritar alinhado com o título */}
+                {onToggleFavorite && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onToggleFavorite()
+                    }}
+                    className="p-1.5 hover:bg-gray-100 rounded-lg transition-all duration-200 active:scale-95 flex-shrink-0"
+                  >
+                    <Heart
+                      className={`w-4 h-4 transition-colors ${
+                        isFavorited
+                          ? 'fill-blue-500 text-blue-500'
+                          : 'text-gray-400 hover:text-blue-500'
+                      }`}
+                    />
+                  </button>
+                )}
               </div>
 
               {/* CORREÇÃO: Posição fixa na parte inferior - REMOVIDO appraisedValue */}
@@ -98,24 +120,6 @@ export function AuctionCardHorizontalVehicle({
                 )}
               </div>
             </div>
-
-            {onToggleFavorite && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation()
-                  onToggleFavorite()
-                }}
-                className="p-1.5 hover:bg-gray-100 rounded-lg transition-all duration-200 active:scale-95 flex-shrink-0"
-              >
-                <Heart
-                  className={`w-4 h-4 transition-colors ${
-                    isFavorited
-                      ? 'fill-blue-500 text-blue-500'
-                      : 'text-gray-400 hover:text-blue-500'
-                  }`}
-                />
-              </button>
-            )}
           </div>
         </div>
       </div>
