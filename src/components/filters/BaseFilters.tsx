@@ -146,7 +146,7 @@ export const BaseFilters: React.FC<BaseFiltersProps> = React.memo(({
             onValueChange={handleCidadeChange}
             placeholder={
               !estado || estado === "all" 
-                ? "Selecione um estado primeiro"
+                ? "Cidade"
                 : errorMunicipios 
                 ? "Erro ao carregar cidades"
                 : "Cidade"
@@ -156,7 +156,7 @@ export const BaseFilters: React.FC<BaseFiltersProps> = React.memo(({
             loading={loadingMunicipios}
           />
           
-          {/* 🔄 Mensagem de status para cidades */}
+          {/* 🔄 Mensagem de status para cidades - APENAS ERRO E LOADING */}
           <div className="min-h-[16px]">
             {errorMunicipios && (
               <p className="text-xs text-red-500 mt-1">
@@ -166,11 +166,6 @@ export const BaseFilters: React.FC<BaseFiltersProps> = React.memo(({
             {loadingMunicipios && (
               <p className="text-xs text-blue-500 mt-1">
                 Carregando cidades...
-              </p>
-            )}
-            {!loadingMunicipios && !errorMunicipios && municipios.length > 0 && (
-              <p className="text-xs text-gray-500 mt-1">
-                {municipios.length} cidades disponíveis
               </p>
             )}
           </div>
