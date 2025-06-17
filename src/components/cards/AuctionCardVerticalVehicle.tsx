@@ -16,7 +16,6 @@ interface AuctionCardVerticalVehicleProps {
   onLink?: () => void
   discount?: string
   isNew?: boolean
-  appraisedValue?: string
 }
 
 export function AuctionCardVerticalVehicle({
@@ -35,7 +34,6 @@ export function AuctionCardVerticalVehicle({
   onLink,
   discount,
   isNew,
-  appraisedValue,
 }: AuctionCardVerticalVehicleProps) {
   // Formatar cidade e estado: "São Paulo/SP" -> "São Paulo, SP"
   const formatCityState = (location: string) => {
@@ -100,6 +98,7 @@ export function AuctionCardVerticalVehicle({
             <span className="truncate font-normal">{formatCityState(cityState)}</span>
           </div>
 
+          {/* CORREÇÃO: REMOVIDO appraisedValue */}
           <div className="flex items-baseline gap-2 mb-3 mt-auto">
             <span className="text-xl md:text-lg font-bold text-gray-900">
               {price}

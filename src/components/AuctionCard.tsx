@@ -83,7 +83,6 @@ export const AuctionCard: React.FC<AuctionCardProps> = ({ auction, viewMode }) =
     date: formatTimeRemaining(auction.end_date),
     tags: tags,
     discount: discountText,
-    appraisedValue: auction.appraised_value ? formatCurrency(auction.appraised_value) : undefined,
   };
 
   if (viewMode === 'horizontal') {
@@ -105,6 +104,7 @@ export const AuctionCard: React.FC<AuctionCardProps> = ({ auction, viewMode }) =
           titleLeft={auction.property_type || "Imóvel"}
           subtitle={`${auction.property_address} – ${auction.city}, ${auction.state}`}
           area={mockArea}
+          appraisedValue={auction.appraised_value ? formatCurrency(auction.appraised_value) : undefined}
         />
       );
     }
@@ -127,6 +127,7 @@ export const AuctionCard: React.FC<AuctionCardProps> = ({ auction, viewMode }) =
           titleLeft={auction.property_type || "Imóvel"}
           subtitle={`${auction.property_address} – ${auction.city}, ${auction.state}`}
           area={mockArea}
+          appraisedValue={auction.appraised_value ? formatCurrency(auction.appraised_value) : undefined}
         />
       );
     }
