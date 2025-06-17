@@ -9,15 +9,17 @@ interface MultiToggleGridProps {
   disabled?: boolean
 }
 
-export const MultiToggleGrid: React.FC<MultiToggleGridProps> = ({
+// 🚀 OTIMIZAÇÃO: React.memo para evitar re-renderizações desnecessárias
+export const MultiToggleGrid: React.FC<MultiToggleGridProps> = React.memo(({
   options,
   value = [], // Garantir que value nunca seja undefined
   onValueChange,
   className,
   disabled = false
 }) => {
-  const handleToggle = (optionValue: string) => {
-    if (disabled) return;
+  // 🚀 OTIMIZAÇÃO: Memoizar handler para evitar recriações
+  const handleToggle = React.useCallback((optionValue: string) => {
+    if (disabled || !onValueChange) return;
     
     const currentValues = Array.isArray(value) ? value : [];
     let newValues: string[];
@@ -37,8 +39,8 @@ export const MultiToggleGrid: React.FC<MultiToggleGridProps> = ({
       action: currentValues.includes(optionValue) ? 'remove' : 'add'
     });
     
-    onValueChange?.(newValues);
-  };
+    onValueChange(newValues);
+  }, [disabled, onValueChange, value]);
 
   return (
     <div className={cn("grid grid-cols-2 gap-3 w-full", className)}>
@@ -64,4 +66,7 @@ export const MultiToggleGrid: React.FC<MultiToggleGridProps> = ({
       })}
     </div>
   );
-};
+});
+
+// 🚀 OTIMIZAÇÃO: Definir displayName para debugging
+MultiToggleGrid.displayName = 'MultiToggleGrid';

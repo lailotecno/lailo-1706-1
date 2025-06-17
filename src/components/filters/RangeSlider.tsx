@@ -14,7 +14,8 @@ interface RangeSliderProps {
   className?: string
 }
 
-export const RangeSlider: React.FC<RangeSliderProps> = ({
+// 🚀 OTIMIZAÇÃO: React.memo para evitar re-renderizações desnecessárias
+export const RangeSlider: React.FC<RangeSliderProps> = React.memo(({
   min,
   max,
   step = 1,
@@ -24,7 +25,7 @@ export const RangeSlider: React.FC<RangeSliderProps> = ({
   suffix = "",
   className
 }) => {
-  // Ensure value is always a valid array of two numbers
+  // 🚀 OTIMIZAÇÃO: Memoizar valor seguro para evitar recálculos
   const safeValue: [number, number] = React.useMemo(() => {
     if (!Array.isArray(value) || value.length !== 2 || 
         typeof value[0] !== 'number' || typeof value[1] !== 'number' ||
@@ -34,7 +35,8 @@ export const RangeSlider: React.FC<RangeSliderProps> = ({
     return value
   }, [value, min, max])
 
-  const handleInputChange = (index: 0 | 1, inputValue: string) => {
+  // 🚀 OTIMIZAÇÃO: Memoizar handler para evitar recriações
+  const handleInputChange = React.useCallback((index: 0 | 1, inputValue: string) => {
     const numValue = parseFloat(inputValue) || 0
     const clampedValue = Math.max(min, Math.min(max, numValue))
     const newValue: [number, number] = [...safeValue]
@@ -48,11 +50,12 @@ export const RangeSlider: React.FC<RangeSliderProps> = ({
     }
     
     onValueChange(newValue)
-  }
+  }, [min, max, safeValue, onValueChange])
 
-  const formatValue = (val: number) => {
+  // 🚀 OTIMIZAÇÃO: Memoizar função de formatação
+  const formatValue = React.useCallback((val: number) => {
     return `${prefix}${val.toLocaleString('pt-BR')}${suffix}`
-  }
+  }, [prefix, suffix])
 
   return (
     <div className={cn("space-y-4", className)}>
@@ -108,4 +111,7 @@ export const RangeSlider: React.FC<RangeSliderProps> = ({
       </div>
     </div>
   )
-}
+});
+
+// 🚀 OTIMIZAÇÃO: Definir displayName para debugging
+RangeSlider.displayName = 'RangeSlider';

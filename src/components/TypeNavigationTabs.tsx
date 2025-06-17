@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useMemo } from 'react';
+import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { 
   Car, 
@@ -42,14 +42,15 @@ interface TabItem {
   route: string;
 }
 
-export const TypeNavigationTabs: React.FC<TypeNavigationTabsProps> = ({ category }) => {
+// 🚀 OTIMIZAÇÃO: React.memo para evitar re-renderizações desnecessárias
+export const TypeNavigationTabs: React.FC<TypeNavigationTabsProps> = React.memo(({ category }) => {
   const navigate = useNavigate();
   const { tipo } = useParams<{ tipo: string }>();
   
   const tabsContainerRef = useRef<HTMLDivElement>(null);
 
-  // Normalizar e validar o tipo atual
-  const getCurrentType = (): string => {
+  // 🚀 OTIMIZAÇÃO: Memoizar normalização do tipo atual
+  const getCurrentType = useCallback((): string => {
     if (!tipo) return 'todos';
     
     if (category === 'veiculos') {
@@ -62,7 +63,7 @@ export const TypeNavigationTabs: React.FC<TypeNavigationTabsProps> = ({ category
       if (tipo === 'terrenos') return 'terrenos-e-lotes';
       return isValidPropertyType(tipo) ? tipo : 'todos';
     }
-  };
+  }, [tipo, category]);
 
   const currentType = getCurrentType();
 
@@ -73,22 +74,41 @@ export const TypeNavigationTabs: React.FC<TypeNavigationTabsProps> = ({ category
     }
   }, [tipo, currentType, category, navigate]);
 
-  // Usar useMemo para estabilizar o array de tabs e evitar recriações desnecessárias
+  // 🚀 OTIMIZAÇÃO: Memoizar ícones para evitar recriações
+  const vehicleIcons = useMemo((): Record<VehicleType, React.ComponentType<{ className?: string }>> => ({
+    'todos': MoreHorizontal,
+    'carros': Car,
+    'motos': Bike,
+    'caminhoes': Truck,
+    'onibus': Bus,
+    'maquinas': Wrench,
+    'apoio': Truck, // Ícone para 'Apoio' (ex-reboques)
+    'embarcacoes': Ship,
+    'recreativos': Car,
+    'nao-informado': HelpCircle,
+  }), []);
+
+  const propertyIcons = useMemo((): Record<PropertyType, React.ComponentType<{ className?: string }>> => ({
+    'todos': MoreHorizontal,
+    'apartamentos': Building,
+    'casas': Home,
+    'comerciais': Store,
+    'compactos': Building2,
+    'condominios': Building,
+    'galpoes': Warehouse,
+    'garagem': Car,
+    'hospedagem': Building,
+    'industriais': Warehouse,
+    'mistos': Building2,
+    'predios': Building,
+    'rurais': TreePine,
+    'terrenos-e-lotes': Mountain, // Ícone para 'Terrenos e Lotes'
+    'nao-informado': HelpCircle,
+  }), []);
+
+  // 🚀 OTIMIZAÇÃO: Memoizar tabs para evitar recriações desnecessárias
   const tabs = useMemo((): TabItem[] => {
     if (category === 'veiculos') {
-      const vehicleIcons: Record<VehicleType, React.ComponentType<{ className?: string }>> = {
-        'todos': MoreHorizontal,
-        'carros': Car,
-        'motos': Bike,
-        'caminhoes': Truck,
-        'onibus': Bus,
-        'maquinas': Wrench,
-        'apoio': Truck, // Ícone para 'Apoio' (ex-reboques)
-        'embarcacoes': Ship,
-        'recreativos': Car,
-        'nao-informado': HelpCircle,
-      };
-
       return VEHICLE_TYPES.map(type => ({
         id: type,
         label: getVehicleTypeLabel(type),
@@ -96,24 +116,6 @@ export const TypeNavigationTabs: React.FC<TypeNavigationTabsProps> = ({ category
         route: `/buscador/veiculos/${type}`
       }));
     } else {
-      const propertyIcons: Record<PropertyType, React.ComponentType<{ className?: string }>> = {
-        'todos': MoreHorizontal,
-        'apartamentos': Building,
-        'casas': Home,
-        'comerciais': Store,
-        'compactos': Building2,
-        'condominios': Building,
-        'galpoes': Warehouse,
-        'garagem': Car,
-        'hospedagem': Building,
-        'industriais': Warehouse,
-        'mistos': Building2,
-        'predios': Building,
-        'rurais': TreePine,
-        'terrenos-e-lotes': Mountain, // Ícone para 'Terrenos e Lotes'
-        'nao-informado': HelpCircle,
-      };
-
       return PROPERTY_TYPES.map(type => ({
         id: type,
         label: getPropertyTypeLabel(type),
@@ -121,29 +123,34 @@ export const TypeNavigationTabs: React.FC<TypeNavigationTabsProps> = ({ category
         route: `/buscador/imoveis/${type}`
       }));
     }
-  }, [category]); // Dependência apenas da category
+  }, [category, vehicleIcons, propertyIcons]);
 
-  // Funções para rolar horizontalmente
-  const handleScrollLeft = () => {
+  // 🚀 OTIMIZAÇÃO: Memoizar handlers de scroll
+  const handleScrollLeft = useCallback(() => {
     if (tabsContainerRef.current) {
       tabsContainerRef.current.scrollBy({ left: -200, behavior: 'smooth' });
     }
-  };
+  }, []);
 
-  const handleScrollRight = () => {
+  const handleScrollRight = useCallback(() => {
     if (tabsContainerRef.current) {
       tabsContainerRef.current.scrollBy({ left: 200, behavior: 'smooth' });
     }
-  };
+  }, []);
 
-  const handleTabClick = (route: string) => {
+  const handleTabClick = useCallback((route: string) => {
     navigate(route);
-  };
+  }, [navigate]);
 
-  const TabButton: React.FC<{ tab: TabItem; isActive: boolean }> = ({ tab, isActive }) => {
+  // 🚀 OTIMIZAÇÃO: Memoizar componente TabButton
+  const TabButton = React.memo<{ tab: TabItem; isActive: boolean }>(({ tab, isActive }) => {
+    const handleClick = useCallback(() => {
+      handleTabClick(tab.route);
+    }, [tab.route]);
+
     return (
       <button
-        onClick={() => handleTabClick(tab.route)}
+        onClick={handleClick}
         className={`
           px-3 py-2 text-sm font-medium transition-all duration-200 
           whitespace-nowrap flex-shrink-0 rounded-xl
@@ -156,7 +163,9 @@ export const TypeNavigationTabs: React.FC<TypeNavigationTabsProps> = ({ category
         {tab.label}
       </button>
     );
-  };
+  });
+
+  TabButton.displayName = 'TabButton';
 
   return (
     <div className="w-full">
@@ -220,4 +229,7 @@ export const TypeNavigationTabs: React.FC<TypeNavigationTabsProps> = ({ category
       </div>
     </div>
   );
-};
+});
+
+// 🚀 OTIMIZAÇÃO: Definir displayName para debugging
+TypeNavigationTabs.displayName = 'TypeNavigationTabs';

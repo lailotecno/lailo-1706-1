@@ -8,24 +8,29 @@ interface FormatToggleProps {
   disabled?: boolean
 }
 
-export const FormatToggle: React.FC<FormatToggleProps> = ({
+// 🚀 OTIMIZAÇÃO: React.memo para evitar re-renderizações desnecessárias
+export const FormatToggle: React.FC<FormatToggleProps> = React.memo(({
   value,
   onValueChange,
   className,
   disabled = false
 }) => {
-  const options = [
+  // 🚀 OTIMIZAÇÃO: Memoizar opções para evitar recriações
+  const options = React.useMemo(() => [
     { value: "leilao", label: "Leilão" },
     { value: "venda-direta", label: "Venda Direta" }
-  ]
+  ], []);
 
-  const handleSelect = (optionValue: string) => {
+  // 🚀 OTIMIZAÇÃO: Memoizar handler para evitar recriações
+  const handleSelect = React.useCallback((optionValue: string) => {
+    if (!onValueChange) return;
+    
     if (value === optionValue) {
-      onValueChange?.("") // Deselect if clicking the same option
+      onValueChange("") // Deselect if clicking the same option
     } else {
-      onValueChange?.(optionValue)
+      onValueChange(optionValue)
     }
-  }
+  }, [value, onValueChange]);
 
   return (
     <div className={cn("space-y-3", className)}>
@@ -58,4 +63,7 @@ export const FormatToggle: React.FC<FormatToggleProps> = ({
       </div>
     </div>
   )
-}
+});
+
+// 🚀 OTIMIZAÇÃO: Definir displayName para debugging
+FormatToggle.displayName = 'FormatToggle';
