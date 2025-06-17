@@ -426,8 +426,8 @@ export const BuscadorListingPage: React.FC<BuscadorListingPageProps> = ({ catego
                 </>
               )}
 
-              {/* Pagination Container - SEMPRE PRESENTE para evitar layout shift */}
-              <div className="mt-8 mb-8 w-full overflow-x-auto">
+              {/* Pagination Container - SEMPRE PRESENTE com altura fixa para evitar layout shift */}
+              <div className="mt-8 mb-8 w-full overflow-x-auto min-h-[72px] flex items-center justify-center">
                 {!showEmptyState && totalPages > 1 && (
                   <Pagination
                     currentPage={currentPage}
