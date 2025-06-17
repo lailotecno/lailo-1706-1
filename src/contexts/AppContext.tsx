@@ -32,7 +32,12 @@ interface UIState {
 
 interface AppState {
   viewMode: ViewMode;
-  filters: {
+  // CORREÇÃO: Separar filtros staged (editando) dos applied (aplicados)
+  stagedFilters: {
+    imoveis: ImoveisFilters;
+    veiculos: VeiculosFilters;
+  };
+  appliedFilters: {
     imoveis: ImoveisFilters;
     veiculos: VeiculosFilters;
   };
@@ -72,7 +77,11 @@ const defaultUIState: UIState = {
 
 const defaultState: AppState = {
   viewMode: 'horizontal',
-  filters: {
+  stagedFilters: {
+    imoveis: defaultImoveisFilters,
+    veiculos: defaultVeiculosFilters
+  },
+  appliedFilters: {
     imoveis: defaultImoveisFilters,
     veiculos: defaultVeiculosFilters
   },
@@ -84,8 +93,10 @@ const defaultState: AppState = {
 // ===== ACTIONS =====
 type AppAction =
   | { type: 'SET_VIEW_MODE'; payload: ViewMode }
-  | { type: 'SET_IMOVEIS_FILTERS'; payload: Partial<ImoveisFilters> }
-  | { type: 'SET_VEICULOS_FILTERS'; payload: Partial<VeiculosFilters> }
+  | { type: 'SET_STAGED_IMOVEIS_FILTERS'; payload: Partial<ImoveisFilters> }
+  | { type: 'SET_STAGED_VEICULOS_FILTERS'; payload: Partial<VeiculosFilters> }
+  | { type: 'APPLY_IMOVEIS_FILTERS' }
+  | { type: 'APPLY_VEICULOS_FILTERS' }
   | { type: 'CLEAR_IMOVEIS_FILTERS' }
   | { type: 'CLEAR_VEICULOS_FILTERS' }
   | { type: 'SET_SORT_OPTION'; payload: SortOption }
@@ -105,35 +116,57 @@ function appReducer(state: AppState, action: AppAction): AppState {
         viewMode: action.payload
       };
       
-    case 'SET_IMOVEIS_FILTERS':
+    case 'SET_STAGED_IMOVEIS_FILTERS':
       return {
         ...state,
-        filters: {
-          ...state.filters,
+        stagedFilters: {
+          ...state.stagedFilters,
           imoveis: {
-            ...state.filters.imoveis,
+            ...state.stagedFilters.imoveis,
             ...action.payload
           }
         }
       };
       
-    case 'SET_VEICULOS_FILTERS':
+    case 'SET_STAGED_VEICULOS_FILTERS':
       return {
         ...state,
-        filters: {
-          ...state.filters,
+        stagedFilters: {
+          ...state.stagedFilters,
           veiculos: {
-            ...state.filters.veiculos,
+            ...state.stagedFilters.veiculos,
             ...action.payload
           }
+        }
+      };
+      
+    case 'APPLY_IMOVEIS_FILTERS':
+      return {
+        ...state,
+        appliedFilters: {
+          ...state.appliedFilters,
+          imoveis: { ...state.stagedFilters.imoveis }
+        }
+      };
+      
+    case 'APPLY_VEICULOS_FILTERS':
+      return {
+        ...state,
+        appliedFilters: {
+          ...state.appliedFilters,
+          veiculos: { ...state.stagedFilters.veiculos }
         }
       };
       
     case 'CLEAR_IMOVEIS_FILTERS':
       return {
         ...state,
-        filters: {
-          ...state.filters,
+        stagedFilters: {
+          ...state.stagedFilters,
+          imoveis: defaultImoveisFilters
+        },
+        appliedFilters: {
+          ...state.appliedFilters,
           imoveis: defaultImoveisFilters
         }
       };
@@ -141,8 +174,12 @@ function appReducer(state: AppState, action: AppAction): AppState {
     case 'CLEAR_VEICULOS_FILTERS':
       return {
         ...state,
-        filters: {
-          ...state.filters,
+        stagedFilters: {
+          ...state.stagedFilters,
+          veiculos: defaultVeiculosFilters
+        },
+        appliedFilters: {
+          ...state.appliedFilters,
           veiculos: defaultVeiculosFilters
         }
       };
@@ -187,8 +224,10 @@ interface AppContextType {
   state: AppState;
   actions: {
     setViewMode: (mode: ViewMode) => void;
-    setImoveisFilters: (filters: Partial<ImoveisFilters>) => void;
-    setVeiculosFilters: (filters: Partial<VeiculosFilters>) => void;
+    setStagedImoveisFilters: (filters: Partial<ImoveisFilters>) => void;
+    setStagedVeiculosFilters: (filters: Partial<VeiculosFilters>) => void;
+    applyImoveisFilters: () => void;
+    applyVeiculosFilters: () => void;
     clearImoveisFilters: () => void;
     clearVeiculosFilters: () => void;
     setSortOption: (sort: SortOption) => void;
@@ -208,9 +247,10 @@ const saveToStorage = (state: AppState) => {
     // Salvar apenas dados relevantes (não UI state temporário)
     const dataToSave = {
       viewMode: state.viewMode,
-      filters: state.filters,
+      appliedFilters: state.appliedFilters, // Salvar apenas os filtros aplicados
       sortOption: state.sortOption,
       // Não salvar searchQuery pois é temporário
+      // Não salvar stagedFilters pois são temporários
       // Não salvar ui state pois é temporário
     };
     
@@ -245,24 +285,29 @@ const loadFromStorage = (): Partial<AppState> => {
       validatedState.sortOption = parsed.sortOption;
     }
     
-    // Validar filters
-    if (parsed.filters && typeof parsed.filters === 'object') {
-      validatedState.filters = {};
+    // Validar appliedFilters
+    if (parsed.appliedFilters && typeof parsed.appliedFilters === 'object') {
+      validatedState.appliedFilters = {};
+      validatedState.stagedFilters = {}; // Inicializar staged com os mesmos valores
       
       // Validar filtros de imóveis
-      if (parsed.filters.imoveis && typeof parsed.filters.imoveis === 'object') {
-        validatedState.filters.imoveis = {
+      if (parsed.appliedFilters.imoveis && typeof parsed.appliedFilters.imoveis === 'object') {
+        const imoveisFilters = {
           ...defaultImoveisFilters,
-          ...parsed.filters.imoveis
+          ...parsed.appliedFilters.imoveis
         };
+        validatedState.appliedFilters.imoveis = imoveisFilters;
+        validatedState.stagedFilters.imoveis = imoveisFilters; // Staged começa igual ao applied
       }
       
       // Validar filtros de veículos
-      if (parsed.filters.veiculos && typeof parsed.filters.veiculos === 'object') {
-        validatedState.filters.veiculos = {
+      if (parsed.appliedFilters.veiculos && typeof parsed.appliedFilters.veiculos === 'object') {
+        const veiculosFilters = {
           ...defaultVeiculosFilters,
-          ...parsed.filters.veiculos
+          ...parsed.appliedFilters.veiculos
         };
+        validatedState.appliedFilters.veiculos = veiculosFilters;
+        validatedState.stagedFilters.veiculos = veiculosFilters; // Staged começa igual ao applied
       }
     }
     
@@ -304,12 +349,20 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
       dispatch({ type: 'SET_VIEW_MODE', payload: mode });
     },
     
-    setImoveisFilters: (filters: Partial<ImoveisFilters>) => {
-      dispatch({ type: 'SET_IMOVEIS_FILTERS', payload: filters });
+    setStagedImoveisFilters: (filters: Partial<ImoveisFilters>) => {
+      dispatch({ type: 'SET_STAGED_IMOVEIS_FILTERS', payload: filters });
     },
     
-    setVeiculosFilters: (filters: Partial<VeiculosFilters>) => {
-      dispatch({ type: 'SET_VEICULOS_FILTERS', payload: filters });
+    setStagedVeiculosFilters: (filters: Partial<VeiculosFilters>) => {
+      dispatch({ type: 'SET_STAGED_VEICULOS_FILTERS', payload: filters });
+    },
+    
+    applyImoveisFilters: () => {
+      dispatch({ type: 'APPLY_IMOVEIS_FILTERS' });
+    },
+    
+    applyVeiculosFilters: () => {
+      dispatch({ type: 'APPLY_VEICULOS_FILTERS' });
     },
     
     clearImoveisFilters: () => {

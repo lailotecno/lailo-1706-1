@@ -20,7 +20,7 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
   category,
   currentVehicleType = 'todos'
 }) => {
-  const { state, actions } = useAppContext();
+  const { actions } = useAppContext();
   const [isApplying, setIsApplying] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
 
@@ -36,8 +36,19 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
     // Simular um pequeno delay para feedback visual
     await new Promise(resolve => setTimeout(resolve, 300));
     
-    // No contexto, os filtros já são aplicados automaticamente
-    // Aqui só precisamos fechar o modal no mobile
+    try {
+      // CORREÇÃO: Aplicar os filtros staged para applied
+      if (category === 'imoveis') {
+        actions.applyImoveisFilters();
+      } else {
+        actions.applyVeiculosFilters();
+      }
+      
+      console.log('✅ Filtros aplicados com sucesso');
+    } catch (error) {
+      console.error('❌ Erro ao aplicar filtros:', error);
+    }
+    
     setIsApplying(false);
     
     if (isMobile && onClose) {
@@ -57,6 +68,8 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
       } else {
         actions.clearVeiculosFilters();
       }
+      
+      console.log('✅ Filtros limpos com sucesso');
     } catch (error) {
       console.error('❌ Erro ao limpar filtros:', error);
     }

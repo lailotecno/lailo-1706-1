@@ -33,7 +33,8 @@ export const BuscadorListingPage: React.FC<BuscadorListingPageProps> = ({ catego
     viewMode: state.viewMode,
     sortOption: state.sortOption,
     searchQuery: state.searchQuery,
-    filters: state.filters
+    appliedFilters: state.appliedFilters,
+    stagedFilters: state.stagedFilters
   });
 
   // Validar e normalizar o tipo
@@ -49,31 +50,31 @@ export const BuscadorListingPage: React.FC<BuscadorListingPageProps> = ({ catego
 
   const currentType = getCurrentType();
   
-  // Get filtered and sorted auctions using context state
+  // CORREÇÃO: Get filtered and sorted auctions using APPLIED filters (não staged)
   const { auctions: filteredAndSortedAuctions, totalSites, newAuctions } = useMemo(() => {
     console.log('🔍 Buscando leilões:', { category, currentType, sortOption: state.sortOption, searchQuery: state.searchQuery });
     
     try {
-      // Convert our filter format to the expected format
+      // CORREÇÃO: Convert our APPLIED filter format to the expected format
       const filters = category === 'imoveis' ? {
-        format: state.filters.imoveis.formato || undefined,
-        origin: state.filters.imoveis.origem.length > 0 ? state.filters.imoveis.origem : undefined,
-        stage: state.filters.imoveis.etapa.length > 0 ? state.filters.imoveis.etapa : undefined,
-        state: state.filters.imoveis.estado && state.filters.imoveis.estado !== "all" ? state.filters.imoveis.estado : undefined,
-        city: state.filters.imoveis.cidade && state.filters.imoveis.cidade !== "all" ? state.filters.imoveis.cidade : undefined,
-        useful_area_m2: state.filters.imoveis.area,
-        initial_bid_value: state.filters.imoveis.valor
+        format: state.appliedFilters.imoveis.formato || undefined,
+        origin: state.appliedFilters.imoveis.origem.length > 0 ? state.appliedFilters.imoveis.origem : undefined,
+        stage: state.appliedFilters.imoveis.etapa.length > 0 ? state.appliedFilters.imoveis.etapa : undefined,
+        state: state.appliedFilters.imoveis.estado && state.appliedFilters.imoveis.estado !== "all" ? state.appliedFilters.imoveis.estado : undefined,
+        city: state.appliedFilters.imoveis.cidade && state.appliedFilters.imoveis.cidade !== "all" ? state.appliedFilters.imoveis.cidade : undefined,
+        useful_area_m2: state.appliedFilters.imoveis.area,
+        initial_bid_value: state.appliedFilters.imoveis.valor
       } : {
-        format: state.filters.veiculos.formato || undefined,
-        origin: state.filters.veiculos.origem.length > 0 ? state.filters.veiculos.origem : undefined,
-        stage: state.filters.veiculos.etapa.length > 0 ? state.filters.veiculos.etapa : undefined,
-        state: state.filters.veiculos.estado && state.filters.veiculos.estado !== "all" ? state.filters.veiculos.estado : undefined,
-        city: state.filters.veiculos.cidade && state.filters.veiculos.cidade !== "all" ? state.filters.veiculos.cidade : undefined,
-        brand: state.filters.veiculos.marca && state.filters.veiculos.marca !== "all" ? state.filters.veiculos.marca : undefined,
-        model: state.filters.veiculos.modelo && state.filters.veiculos.modelo !== "all" ? state.filters.veiculos.modelo : undefined,
-        color: state.filters.veiculos.cor && state.filters.veiculos.cor !== "all" ? state.filters.veiculos.cor : undefined,
-        year: state.filters.veiculos.ano,
-        initial_bid_value: state.filters.veiculos.preco
+        format: state.appliedFilters.veiculos.formato || undefined,
+        origin: state.appliedFilters.veiculos.origem.length > 0 ? state.appliedFilters.veiculos.origem : undefined,
+        stage: state.appliedFilters.veiculos.etapa.length > 0 ? state.appliedFilters.veiculos.etapa : undefined,
+        state: state.appliedFilters.veiculos.estado && state.appliedFilters.veiculos.estado !== "all" ? state.appliedFilters.veiculos.estado : undefined,
+        city: state.appliedFilters.veiculos.cidade && state.appliedFilters.veiculos.cidade !== "all" ? state.appliedFilters.veiculos.cidade : undefined,
+        brand: state.appliedFilters.veiculos.marca && state.appliedFilters.veiculos.marca !== "all" ? state.appliedFilters.veiculos.marca : undefined,
+        model: state.appliedFilters.veiculos.modelo && state.appliedFilters.veiculos.modelo !== "all" ? state.appliedFilters.veiculos.modelo : undefined,
+        color: state.appliedFilters.veiculos.cor && state.appliedFilters.veiculos.cor !== "all" ? state.appliedFilters.veiculos.cor : undefined,
+        year: state.appliedFilters.veiculos.ano,
+        initial_bid_value: state.appliedFilters.veiculos.preco
       };
 
       const result = getAuctionsByCategory(category, currentType, filters, state.sortOption, state.searchQuery);
@@ -84,7 +85,7 @@ export const BuscadorListingPage: React.FC<BuscadorListingPageProps> = ({ catego
       console.error('❌ Erro ao buscar leilões:', error);
       return { auctions: [], totalSites: 0, newAuctions: 0 };
     }
-  }, [category, currentType, state.filters, state.sortOption, state.searchQuery]);
+  }, [category, currentType, state.appliedFilters, state.sortOption, state.searchQuery]); // CORREÇÃO: Usar appliedFilters
   
   // Calculate pagination
   const totalPages = Math.ceil(filteredAndSortedAuctions.length / ITEMS_PER_PAGE);
@@ -102,11 +103,12 @@ export const BuscadorListingPage: React.FC<BuscadorListingPageProps> = ({ catego
   // Reset page when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [state.filters, state.sortOption, state.searchQuery, currentType]);
+  }, [state.appliedFilters, state.sortOption, state.searchQuery, currentType]); // CORREÇÃO: Usar appliedFilters
   
   // Check if there are active filters
   const hasActiveFilters = useMemo(() => {
-    const filters = category === 'imoveis' ? state.filters.imoveis : state.filters.veiculos;
+    // CORREÇÃO: Usar appliedFilters para verificar se há filtros ativos
+    const filters = category === 'imoveis' ? state.appliedFilters.imoveis : state.appliedFilters.veiculos;
     
     return (
       (filters.estado && filters.estado !== "all") ||
@@ -130,7 +132,7 @@ export const BuscadorListingPage: React.FC<BuscadorListingPageProps> = ({ catego
         filters.valor[1] !== 5000000
       ))
     );
-  }, [category, state.filters]);
+  }, [category, state.appliedFilters]); // CORREÇÃO: Usar appliedFilters
   
   const getStatusText = () => {
     const count = filteredAndSortedAuctions.length;
