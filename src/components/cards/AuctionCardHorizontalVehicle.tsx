@@ -67,39 +67,43 @@ export function AuctionCardHorizontalVehicle({
           )}
 
           <div className="flex items-start justify-between gap-2">
-            {/* CORREÇÃO: Altura FIXA em vez de mínima para eliminar layout shift */}
-            <div className="flex-1 min-w-0 h-[68px] flex flex-col justify-between">
-              <div className="flex-shrink-0">
-                <div className="flex items-center gap-1.5 mb-0.5">
+            {/* CORREÇÃO COMPLETA: Altura fixa + overflow control rigoroso */}
+            <div className="flex-1 min-w-0 h-[68px] flex flex-col justify-between overflow-hidden">
+              <div className="flex-shrink-0 overflow-hidden">
+                {/* CORREÇÃO: Título (marca + modelo) com line-clamp obrigatório */}
+                <div className="flex items-center gap-1.5 mb-0.5 min-h-[16px] overflow-hidden">
                   <h3 className="text-[13px] md:text-sm font-bold text-gray-900 leading-tight flex-shrink-0">
                     {brand}
                   </h3>
-                  <span className="text-[13px] md:text-sm font-bold text-gray-900 leading-tight truncate">
+                  <span className="text-[13px] md:text-sm font-bold text-gray-900 leading-tight line-clamp-1 min-w-0">
                     {model}
                   </span>
                 </div>
                 
-                <div className="flex items-center gap-1.5 text-[11px] md:text-xs text-gray-600">
-                  <span className="font-normal">{color}</span>
-                  <span className="text-gray-300">•</span>
-                  <span className="font-normal">{year}</span>
-                  <span className="text-gray-300">•</span>
-                  <span className="truncate font-normal">{formatCityState(cityState)}</span>
+                {/* CORREÇÃO: Metadados com altura fixa e overflow control */}
+                <div className="min-h-[14px] overflow-hidden">
+                  <div className="flex items-center gap-1.5 text-[11px] md:text-xs text-gray-600 line-clamp-1">
+                    <span className="font-normal flex-shrink-0">{color}</span>
+                    <span className="text-gray-300 flex-shrink-0">•</span>
+                    <span className="font-normal flex-shrink-0">{year}</span>
+                    <span className="text-gray-300 flex-shrink-0">•</span>
+                    <span className="font-normal truncate min-w-0">{formatCityState(cityState)}</span>
+                  </div>
                 </div>
               </div>
 
-              {/* CORREÇÃO: Posição fixa na parte inferior */}
-              <div className="flex items-baseline gap-1.5 flex-shrink-0">
-                <span className="text-[15px] md:text-lg font-bold text-gray-900 leading-tight">
+              {/* CORREÇÃO: Área do preço com altura fixa */}
+              <div className="flex items-baseline gap-1.5 flex-shrink-0 min-h-[20px] overflow-hidden">
+                <span className="text-[15px] md:text-lg font-bold text-gray-900 leading-tight flex-shrink-0">
                   {price}
                 </span>
                 {appraisedValue && (
-                  <span className="text-[10px] md:text-xs text-gray-500">
+                  <span className="text-[10px] md:text-xs text-gray-500 flex-shrink-0">
                     {appraisedValue}
                   </span>
                 )}
                 {discount && (
-                  <span className="bg-gradient-to-r from-green-500 to-green-600 text-white text-[10px] md:text-xs font-bold uppercase px-1.5 py-0.5 md:px-2 md:py-0.5 rounded-md shadow-sm">
+                  <span className="bg-gradient-to-r from-green-500 to-green-600 text-white text-[10px] md:text-xs font-bold uppercase px-1.5 py-0.5 md:px-2 md:py-0.5 rounded-md shadow-sm flex-shrink-0">
                     {discount}
                   </span>
                 )}
