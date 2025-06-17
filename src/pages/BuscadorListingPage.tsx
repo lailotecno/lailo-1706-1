@@ -364,8 +364,8 @@ export const BuscadorListingPage: React.FC<BuscadorListingPageProps> = ({ catego
               </div>
             </div>
             
-            {/* CORREÇÃO PRINCIPAL: Container com altura mínima fixa para evitar layout shift */}
-            <main className="w-full px-4 md:px-6 overflow-x-hidden min-h-[calc(100vh-200px)] transition-all duration-300 ease-in-out">
+            {/* CORREÇÃO: Container sem transições genéricas para evitar atraso nas imagens */}
+            <main className="w-full px-4 md:px-6 overflow-x-hidden min-h-[calc(100vh-200px)]">
               {/* Header with status and desktop sort control - Only show if there are results */}
               {!showEmptyState && (
                 <div className="flex flex-col min-[768px]:flex-row min-[768px]:items-center min-[768px]:justify-between py-4 gap-3 w-full">
