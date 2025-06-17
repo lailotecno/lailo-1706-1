@@ -82,8 +82,34 @@ export const BuscadorListingPage: React.FC<BuscadorListingPageProps> = ({ catego
   
   // Get filtered and sorted auctions using APPLIED filters
   const { auctions: filteredAndSortedAuctions, totalSites, newAuctions } = useMemo(() => {
-    const filters = category === 'imoveis' ? appliedImoveisFilters : appliedVeiculosFilters;
-    return getAuctionsByCategory(category, currentType, filters, selectedSort, searchQuery);
+    console.log('🔍 Buscando leilões:', { category, currentType, selectedSort, searchQuery });
+    
+    // Convert our filter format to the expected format
+    const filters = category === 'imoveis' ? {
+      format: appliedImoveisFilters.formato || undefined,
+      origin: appliedImoveisFilters.origem.length > 0 ? appliedImoveisFilters.origem : undefined,
+      stage: appliedImoveisFilters.etapa.length > 0 ? appliedImoveisFilters.etapa : undefined,
+      state: appliedImoveisFilters.estado || undefined,
+      city: appliedImoveisFilters.cidade || undefined,
+      useful_area_m2: appliedImoveisFilters.area,
+      initial_bid_value: appliedImoveisFilters.valor
+    } : {
+      format: appliedVeiculosFilters.formato || undefined,
+      origin: appliedVeiculosFilters.origem.length > 0 ? appliedVeiculosFilters.origem : undefined,
+      stage: appliedVeiculosFilters.etapa.length > 0 ? appliedVeiculosFilters.etapa : undefined,
+      state: appliedVeiculosFilters.estado || undefined,
+      city: appliedVeiculosFilters.cidade || undefined,
+      brand: appliedVeiculosFilters.marca || undefined,
+      model: appliedVeiculosFilters.modelo || undefined,
+      color: appliedVeiculosFilters.cor || undefined,
+      year: appliedVeiculosFilters.ano,
+      initial_bid_value: appliedVeiculosFilters.preco
+    };
+
+    const result = getAuctionsByCategory(category, currentType, filters, selectedSort, searchQuery);
+    console.log('📊 Resultado da busca:', result);
+    
+    return result;
   }, [category, currentType, appliedImoveisFilters, appliedVeiculosFilters, selectedSort, searchQuery]);
   
   // Calculate pagination
@@ -91,6 +117,13 @@ export const BuscadorListingPage: React.FC<BuscadorListingPageProps> = ({ catego
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
   const currentAuctions = filteredAndSortedAuctions.slice(startIndex, endIndex);
+  
+  console.log('📄 Paginação:', { 
+    totalAuctions: filteredAndSortedAuctions.length, 
+    totalPages, 
+    currentPage, 
+    currentAuctions: currentAuctions.length 
+  });
   
   // Reset page when filters change
   useEffect(() => {
@@ -417,7 +450,7 @@ export const BuscadorListingPage: React.FC<BuscadorListingPageProps> = ({ catego
                   }>
                     {currentAuctions.map((auction) => (
                       <AuctionCard
-                        key={auction.id}
+                        key={auction._id}
                         auction={auction}
                         viewMode={viewMode}
                       />
